@@ -7,6 +7,9 @@ DOCKER=docker
 
 BASE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
+
+python_apps:=chatbot mcp
+
 chatbot_CMD=chatbot
 mcp_CMD=mcp
 
@@ -25,8 +28,10 @@ guard-%:
 
 appdirs=*-container
 
+status:
+	@echo "Then apps are $(python_apps): $(foreach app,$(python_apps),$(app)-venv)"
 
-%-venv:
+$(foreach app,$(python_apps),$(app)-venv):%-venv:
 	@echo Creating venv for $*
 	python3 -m venv $*-venv
 	$*-venv/bin/pip install --upgrade pip
@@ -35,39 +40,40 @@ appdirs=*-container
 	${BASE_DIR}$*-venv/bin/poetry install --with dev && \
 	${BASE_DIR}$*-venv/bin/pip install -e .[dev]
 
-.PRECIOUS: %-venv/bin/adev %-venv/bin/pytest
+.PRECIOUS: $(foreach app,$(python_apps),$(app)-venv)
 
-%-venv/bin/adev %-venv/bin/pytest: %-venv
+# #  %-venv/bin/pytest
+$(foreach app,$(python_apps),$(app)-venv/bin/adev):%-venv/bin/adev:%-venv
 	@echo creating adev for $*
 	@source $*-venv/bin/activate && cd $*-container && poetry install --with dev && pip install -e .[dev] && deactivate && cd ..
 
 
-%-run: %-venv
+$(foreach app,$(python_apps),$(app)-run):%-run: %-venv
 	cd $*-container && \
 	${BASE_DIR}$*-venv/bin/${$*_CMD} start --secrets tests/test_data/secrets --config tests/test_data/config.yaml
 
 
-%-dev: %-venv/bin/adev
+$(foreach app,$(python_apps),$(app)-dev):%-dev: %-venv/bin/adev
 	cd $*-container && \
 	${BASE_DIR}$*-venv/bin/adev runserver --port ${$*_PORT}
 
-%-test: %-venv/bin/pytest
+$(foreach app,$(python_apps),$(app)-test):%-test: %-venv/bin/pytest
 	cd $*-container && \
 	${BASE_DIR}$*-venv/bin/pytest -v
 
-%-ptw: %-venv/bin/pytest
+$(foreach app,$(python_apps),$(app)-ptw):%-ptw: %-venv/bin/pytest
 	cd $*-container && \
 	${BASE_DIR}$*-venv/bin/ptw
 
 
-%-docker:
+$(foreach app,$(python_apps),$(app)-docker):%-docker:
 	$(DOCKER) build $*-container -t $* -f $*-container/Dockerfile
 
 %-docker-test:
 	$(DOCKER) build $*-container -t $*-test -f $*-container/Dockerfile --target test
 
 
-%-dockerrun: %-docker
+$(foreach app,$(python_apps),$(app)-docker-run)%-docker-run: %-docker
 	${DOCKER} run -it --rm \
 		--name $* \
 		-v $(shell pwd)/$*-container/tests/test_data/secrets:/opt/app/secrets \
