@@ -4,7 +4,8 @@ version = "0.1.0"
 description = "MCP server to provide customer interactions"
 authors = [{name = "Ben Greene",email = "BenJGreene@gmail.com"}]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = "^3.12"
+
 [tool.poetry.dependencies]
 
 click =  "^8"
@@ -13,6 +14,13 @@ prometheus-async = "^25.1"
 pydantic-file-secrets = "^0.4"
 pydantic-settings = {extras = ["yaml"], version = "^2.10"}
 aiohttp-mcp = "^0.4.1"
+langchain-google-genai = "^2.1"
+langgraph = "^0.6"
+langchain = "^0.3"
+langchain-mcp-adapters = "^0.1.9"
+grandalf = "^0.8"
+pytest-asyncio = "^1.1.0"
+
 
 
 [tool.poetry.group.dev.dependencies]
@@ -27,7 +35,12 @@ pylint = "^3.3.1"
 sphinx-click = "^6.0.0"
 pytest-click = "^1.1.0"
 pytest-cov = "^6.1"
-# pytest-watcher = "^0.4"
+pytest-watcher = "^0.4"
+pytest-aiohttp = "^1.1.0"
+
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 
 [build-system]

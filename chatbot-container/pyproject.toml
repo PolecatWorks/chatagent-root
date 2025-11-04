@@ -29,13 +29,14 @@ langchain-openai = "^0.3"
 langchain-google-genai = "^2.1"
 langchain = "^0.3"
 langchain-mcp-adapters = "^0.1.9"
-langgraph = "^0.5"
+langgraph = "^0.6"
 grandalf = "^0.8"
 mcp = "^1.9"
 
 
 [tool.poetry.group.dev.dependencies]
 aiohttp-devtools = "^1"
+pytest-asyncio = "^1.1.0"
 pytest = "^8"
 Sphinx = "^8"
 sphinx-autodoc-typehints = "^3.2.0"
@@ -48,6 +49,7 @@ pytest-click = "^1.1.0"
 pytest-cov = "^6.1.1"
 pytest-aiohttp = "^1"
 pytest-watch = "^4.2.0"
+deepeval = "^3.3"
 
 
 

@@ -1,29 +1,17 @@
-import datetime
-from zoneinfo import ZoneInfo
+# Contains tools to be used by the LLM
+# These include MCP provisioned tools AND local tools
 
-from aiohttp_mcp import AiohttpMCP, setup_mcp_subapp
+from aiohttp import web
+from customer.config import ServiceConfig
 
-import logging
+from .mcp import connect_to_mcp_server
 
-logger = logging.getLogger(__name__)
-
-
-mcp = AiohttpMCP(debug=False)
-
-myCount = 0
+mytools = []
 
 
-@mcp.tool()
-def count_calls() -> int:
-    """Count the number of calls made to the function"""
-    global myCount
-    myCount += 1
-    logger.info(f"Count the call updated to {myCount}")
-    return myCount
 
+def tools_app_create(app: web.Application, config: ServiceConfig) -> web.Application:
 
-@mcp.tool()
-def get_time(timezone: str) -> str:
-    """Get the current time in the specified timezone."""
-    tz = ZoneInfo(timezone)
-    return datetime.datetime.now(tz).isoformat()
+    app.on_startup.append(connect_to_mcp_server)
+
+    return app

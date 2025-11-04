@@ -1,3 +1,6 @@
+# Provides the tools and resources that are available to the MCP server
+
+
 from aiohttp import web
 from customer.config import ServiceConfig
 
@@ -10,10 +13,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-from ..tools import mcp
+from .tools import mcp
 
 
-def mcp_app_create(app: web.Application, config: ServiceConfig) -> web.Application:
+def mcp_server_app_create(app: web.Application, config: ServiceConfig) -> web.Application:
     """
     Create the service with the given configuration file
     """

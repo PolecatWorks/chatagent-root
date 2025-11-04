@@ -42,9 +42,9 @@ $(foreach app,$(python_apps),$(app)-venv):%-venv:
 
 .PRECIOUS: $(foreach app,$(python_apps),$(app)-venv)
 
-# #  %-venv/bin/pytest
 $(foreach app,$(python_apps),$(app)-venv/bin/adev):%-venv/bin/adev:%-venv
-	@echo creating adev for $*
+$(foreach app,$(python_apps),$(app)-venv/bin/pytest):%-venv/bin/pytest:%-venv
+	@echo creating development tools for $*
 	@source $*-venv/bin/activate && cd $*-container && poetry install --with dev && pip install -e .[dev] && deactivate && cd ..
 
 
@@ -63,7 +63,7 @@ $(foreach app,$(python_apps),$(app)-test):%-test: %-venv/bin/pytest
 
 $(foreach app,$(python_apps),$(app)-ptw):%-ptw: %-venv/bin/pytest
 	cd $*-container && \
-	${BASE_DIR}$*-venv/bin/ptw
+	${BASE_DIR}$*-venv/bin/ptw --runner ${BASE_DIR}$*-venv/bin/pytest --now --pdb . -- --enable-livellm
 
 
 $(foreach app,$(python_apps),$(app)-docker):%-docker:
@@ -132,6 +132,15 @@ k8s-creds: export PG_NAME=$(shell kubectl -n log4ham get secret $(PG_SECRET) -o 
 k8s-creds: export DATABASE_URL=postgres://${PG_USER}:${PGPASSWORD}@localhost/${PG_NAME}
 k8s-creds:
 	@echo Creating k8s creds
+
+
+m365agentsplayground-env/node_modules/.bin/agentsplayground:
+	mkdir -p m365agentsplayground-env
+	cd m365agentsplayground-env && npm install @microsoft/m365agentsplayground
+
+
+agentsplayground-dev: m365agentsplayground-env/node_modules/.bin/agentsplayground
+	m365agentsplayground-env/node_modules/.bin/agentsplayground -e "http://localhost:${chatbot_PORT}/api/messages" -c "emulator"
 
 
 
