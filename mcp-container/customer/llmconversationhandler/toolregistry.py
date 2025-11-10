@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 from collections.abc import Sequence, Callable  # For List and Callable
-from chatbot.config.tool import ToolBoxConfig
+from customer.config.tool import ToolBoxConfig
 from langchain_core.messages.tool import ToolCall, ToolMessage
 from langchain_core.tools.structured import StructuredTool
 import logging
@@ -61,8 +61,8 @@ class ToolRegistry:
     def register_tool(self, tool: StructuredTool) -> None:
         """Registers the tools with the client."""
 
-        # if not callable(tool):
-        #     raise ValueError(f"Tool {tool} is not callable.")
+        if not callable(tool):
+            raise ValueError(f"Tool {tool} is not callable.")
 
         tool_name = tool.name
 

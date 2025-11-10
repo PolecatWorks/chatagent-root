@@ -1,10 +1,12 @@
 from aiohttp import web
 from customer.config import ServiceConfig
+from customer.llmconversationhandler import langchain_app_create
 from pydantic_yaml import to_yaml_str
 import logging
 from customer.hams import Hams, hams_app_create
 from customer.service import service_app_create
-from customer.mcp import mcp_app_create
+from customer.mcp_server import mcp_server_app_create
+from .tools import tools_app_create
 from customer import keys
 
 logger = logging.getLogger(__name__)
@@ -20,7 +22,10 @@ def app_init(app: web.Application, config: ServiceConfig):
 
     hams_app_create(app, config.hams)
     service_app_create(app, config)
-    mcp_app_create(app, config)
+    mcp_server_app_create(app, config)
+    tools_app_create(app, config)
+
+    langchain_app_create(app, config)
 
     return app
 

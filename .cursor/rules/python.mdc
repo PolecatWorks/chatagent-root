@@ -1,0 +1,98 @@
+---
+description: modifying python source files
+alwaysApply: false
+---
+# Python Code Style and Conventions
+
+## General Python Rules
+- Use Python 3.12+ features and syntax
+- Maximum line length: 120 characters
+- Use 4 spaces for indentation (no tabs)
+- Use type hints for function parameters and return values
+- Prefer async/await over threading for concurrent operations
+- Use f-strings for string formatting
+- Follow PEP 8 style guide with exceptions noted below
+
+## Naming Conventions
+- Functions, methods, variables, modules: `snake_case`
+- Classes: `PascalCase`
+- Constants: `UPPER_CASE`
+- Private attributes/methods: prefix with `_` (single underscore)
+- Type variables: use descriptive names like `T`, `K`, `V` or descriptive names
+
+## Code Organization
+- Keep functions focused and small (max 50 statements)
+- Limit function arguments to 5 or fewer
+- Limit nested blocks to 5 levels maximum
+- Use meaningful variable names (avoid generic names like `foo`, `bar`, `baz`)
+- Group imports: stdlib, third-party, local (separated by blank line)
+
+## Documentation
+- Docstrings are optional (not enforced by linter)
+- When adding docstrings, use Google style or NumPy style
+- Include type information in docstrings when using sphinx-autodoc
+
+## Error Handling
+- Use specific exception types when possible
+- `broad-except` is allowed (configured in linter)
+- Include context in error messages
+
+## Async/Await
+- Use `async def` for async functions
+- Use `await` for async operations
+- Prefer `aiohttp` for HTTP requests
+- Use `pytest-asyncio` for async tests
+- Set `asyncio_mode = "auto"` in pytest configuration
+
+## Type Hints
+- Use type hints for all function signatures
+- Use `typing` module for complex types (Optional, Union, List, Dict, etc.)
+- Use `collections.abc` for abstract base classes when appropriate
+- Use `from __future__ import annotations` for forward references if needed
+
+## Dependencies
+- Use Poetry for dependency management
+- Add new dependencies to `pyproject.toml` in appropriate dependency groups
+- Run `poetry lock --no-update` after adding dependencies
+- Keep dependencies up to date
+
+## Testing
+- Use pytest for testing
+- Test files should be in `tests/` directory
+- Use `pytest-asyncio` for async tests
+- Use descriptive test names that explain what is being tested
+- Use fixtures for test setup and teardown
+
+## Project Structure
+- This is a multi-container project with `chatbot-container/` and `mcp-container/`
+- Each container has its own `pyproject.toml` and dependencies
+- Keep container-specific code in their respective directories
+- Use relative imports within each container
+
+## Libraries and Patterns
+- Use Pydantic for data validation and settings
+- Use LangChain and LangGraph for LLM interactions
+- Use `aiohttp-mcp` for MCP server/client implementations
+- Use `prometheus-async` for metrics
+- Use `pydantic-settings` with YAML support for configuration
+- Use `click` for CLI interfaces
+
+## Code Quality
+- Code should pass flake8 and pylint checks
+- Follow the pylint configuration in `chatbot-container/.pylintrc`
+- Disabled pylint checks: missing-docstring, too-few-public-methods, bad-continuation, no-self-use, duplicate-code, broad-except
+- Use flake8-black to check Black formatting compatibility
+
+## Best Practices
+- Prefer composition over inheritance
+- Use context managers for resource management
+- Use dataclasses or Pydantic models for data structures
+- Avoid deep nesting (max 5 levels)
+- Keep functions pure when possible
+- Use dependency injection for testability
+- Handle secrets using `pydantic-file-secrets`
+
+## Git
+- Write clear, descriptive commit messages
+- Keep commits focused and atomic
+- Use meaningful branch names

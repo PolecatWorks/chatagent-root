@@ -61,10 +61,10 @@ myai:
       max_instances: 10
     - name: count_calls
       max_instances: 10
-    mcps:
-    - name: customers
-      url: http://localhost:8180/mcp
-      transport: sse
+    mcps: []
+    # - name: customers
+    #   url: http://localhost:8180/mcp
+    #   transport: sse
 
 hams:
   url: http://localhost:8079

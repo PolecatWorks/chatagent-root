@@ -1,34 +1,29 @@
-import asyncio
 import base64
 from typing import Any
 from collections.abc import Sequence, Callable  # For List and Callable
-from chatbot.config import MyAiConfig, ServiceConfig
+from customer.config import MyAiConfig, ServiceConfig
 from aiohttp import web
-from chatbot import keys
+from customer import keys
 import logging
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from chatbot.hams import config
-from chatbot.llmconversationhandler import toolregistry
-from chatbot.mcp_client import MCPObjects
-from chatbot.config import LangchainConfig
+from customer.llmconversationhandler import toolregistry
+from customer.tools.mcp import MCPObjects
 from langchain_core.tools.structured import StructuredTool
 import langgraph
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import ToolNode, tools_condition
 from langchain_core.runnables import RunnableConfig
-
+from ..tools import mytools
 
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
     AIMessage,
 )
-from botbuilder.schema import ConversationAccount
 from langchain_core.language_models import BaseChatModel
 
 from prometheus_client import REGISTRY, CollectorRegistry, Summary
-from chatbot.tools import mytools
 from langchain.chat_models import init_chat_model
 import httpx
 
@@ -63,17 +58,19 @@ async def bind_tools_when_ready(app: web.Application):
     llmHandler.compile()
 
 
+def langchain_app_create(app: web.Application, config: ServiceConfig):
+    """
+    Initialize the AI client and add it to the aiohttp application context.
+    """
+    httpx_client = httpx.Client(verify=config.aiclient.httpx_verify_ssl)
 
-def langchain_model(config: LangchainConfig):
-    httpx_client = httpx.Client(verify=config.httpx_verify_ssl)
-
-    match config.model_provider:
+    match config.aiclient.model_provider:
         case "google_genai":
             from langchain_google_genai import ChatGoogleGenerativeAI
 
             model = ChatGoogleGenerativeAI(
-                model=config.model,
-                google_api_key=config.google_api_key.get_secret_value(),
+                model=config.aiclient.model,
+                google_api_key=config.aiclient.google_api_key.get_secret_value(),
                 # http_client=httpx_client,
             )
         case "azure_openai":
@@ -81,26 +78,16 @@ def langchain_model(config: LangchainConfig):
 
             # https://python.langchain.com/api_reference/openai/llms/langchain_openai.llms.azure.AzureOpenAI.html#langchain_openai.llms.azure.AzureOpenAI.http_client
             model = AzureChatOpenAI(
-                model=config.model,
-                azure_endpoint=str(config.azure_endpoint),
-                api_version=config.azure_api_version,
-                api_key=config.azure_api_key.get_secret_value(),
+                model=config.aiclient.model,
+                azure_endpoint=str(config.aiclient.azure_endpoint),
+                api_version=config.aiclient.azure_api_version,
+                api_key=config.aiclient.azure_api_key.get_secret_value(),
                 http_client=httpx_client,
             )
         case _:
             raise ValueError(
-                f"Unsupported model provider: {config.model_provider}"
+                f"Unsupported model provider: {config.aiclient.model_provider}"
             )
-
-    return model
-
-
-
-def langchain_app_create(app: web.Application, config: ServiceConfig):
-    """
-    Initialize the AI client and add it to the aiohttp application context.
-    """
-    model = langchain_model(config.aiclient)
 
     # use bind_tools_when_ready to move some of the constructions funtions to an async runtime
     app.on_startup.append(bind_tools_when_ready)
@@ -168,11 +155,11 @@ class LLMConversationHandler:
     @staticmethod
     def get_graph_config(conversation_id: str, **kwargs) -> RunnableConfig:
         """
-        Returns a configuration dictionary for the graph, given a ConversationAccount.
+        Returns a configuration dictionary for the graph, given a conversation ID.
         This can be used to pass context or metadata to the graph execution.
 
         Args:
-            conversation (ConversationAccount): The conversation context
+            conversation_id (str): The ID of the conversation
 
         Returns:
             dict: Configuration for the graph
@@ -275,7 +262,7 @@ class LLMConversationHandler:
 
     async def upload(
         self,
-        conversation: ConversationAccount,
+        conversation_id: str,
         name: str,
         mime_type: str,
         file_bytes: bytes,
@@ -286,7 +273,7 @@ class LLMConversationHandler:
         Returns:
             None
         """
-        messages = self.get_conversation(conversation)
+        messages = self.get_conversation(conversation_id)
 
         encoded = base64.b64encode(file_bytes).decode("utf-8")
 
@@ -329,9 +316,7 @@ class LLMConversationHandler:
 
         graph_input = {"messages": [HumanMessage(content=prompt)]}
 
-        if not hasattr(self, "graph"):
-            raise ValueError("Graph not yet compiled")
-
+        # Invoke the graph
         final_graph_state = await self.graph.ainvoke(graph_input, config=graph_config)
 
         # Extract the final messages from the graph's output state

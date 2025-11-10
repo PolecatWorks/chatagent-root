@@ -8,7 +8,7 @@ DOCKER=docker
 BASE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 
-python_apps:=chatbot mcp
+python_apps:=chatbot mcp a2a
 
 chatbot_CMD=chatbot
 mcp_CMD=mcp
@@ -18,6 +18,9 @@ mcp_PORT=8180
 
 chatbot_HEALTH_PORT=8079
 mcp_HEALTH_PORT=8179
+
+a2a_PORT=8280
+a2a_HEALTH_PORT=8279
 
 
 guard-%:
@@ -42,9 +45,11 @@ $(foreach app,$(python_apps),$(app)-venv):%-venv:
 
 .PRECIOUS: $(foreach app,$(python_apps),$(app)-venv)
 
-# #  %-venv/bin/pytest
-$(foreach app,$(python_apps),$(app)-venv/bin/adev):%-venv/bin/adev:%-venv
-	@echo creating adev for $*
+
+
+$(foreach app,chatbot mcp,$(app)-venv/bin/adev):%-venv/bin/adev:%-venv
+$(foreach app,chatbot mcp,$(app)-venv/bin/pytest):%-venv/bin/pytest:%-venv
+	@echo creating development tools for $*
 	@source $*-venv/bin/activate && cd $*-container && poetry install --with dev && pip install -e .[dev] && deactivate && cd ..
 
 
@@ -53,9 +58,15 @@ $(foreach app,$(python_apps),$(app)-run):%-run: %-venv
 	${BASE_DIR}$*-venv/bin/${$*_CMD} start --secrets tests/test_data/secrets --config tests/test_data/config.yaml
 
 
-$(foreach app,$(python_apps),$(app)-dev):%-dev: %-venv/bin/adev
+$(foreach app,chatbot mcp,$(app)-dev):%-dev: %-venv/bin/adev
 	cd $*-container && \
 	${BASE_DIR}$*-venv/bin/adev runserver --port ${$*_PORT}
+
+
+a2a-dev:%-dev: %-venv/bin/fastapi
+	cd $*-container && \
+	fastapi dev -e app:create_app --port ${$*_PORT}
+
 
 $(foreach app,$(python_apps),$(app)-test):%-test: %-venv/bin/pytest
 	cd $*-container && \
@@ -63,7 +74,7 @@ $(foreach app,$(python_apps),$(app)-test):%-test: %-venv/bin/pytest
 
 $(foreach app,$(python_apps),$(app)-ptw):%-ptw: %-venv/bin/pytest
 	cd $*-container && \
-	${BASE_DIR}$*-venv/bin/ptw
+	${BASE_DIR}$*-venv/bin/ptw --runner ${BASE_DIR}$*-venv/bin/pytest --now --pdb . -- --enable-livellm
 
 
 $(foreach app,$(python_apps),$(app)-docker):%-docker:
@@ -134,6 +145,15 @@ k8s-creds:
 	@echo Creating k8s creds
 
 
+m365agentsplayground-env/node_modules/.bin/agentsplayground:
+	mkdir -p m365agentsplayground-env
+	cd m365agentsplayground-env && npm install @microsoft/m365agentsplayground
+
+
+agentsplayground-dev: m365agentsplayground-env/node_modules/.bin/agentsplayground
+	m365agentsplayground-env/node_modules/.bin/agentsplayground -e "http://localhost:${chatbot_PORT}/api/messages" -c "emulator"
+
+
 
 
 helm:
@@ -173,7 +193,7 @@ pg-test-forward:
 
 
 ngrok:
-	ngrok http --host-header=rewrite --url=informally-large-terrier.ngrok-free.app 8080
+	ngrok http --host-header=rewrite --url=informally-large-terrier.ngrok-free.app ${chatbot_PORT}
 ngrok-python-dev:
 	ngrok http --host-header=rewrite --url=informally-large-terrier.ngrok-free.app 8000
 ngrok-python:

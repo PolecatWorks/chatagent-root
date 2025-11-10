@@ -25,6 +25,19 @@ logging:
 webservice:
   url: http://0.0.0.0:8080
   prefix: /mcp
+aiclient:
+  model: gemini-2.0-flash
+  model_provider: google_genai
+  # model_provider: github
+  # github_model_repo: openai/gpt-4.1
+  # github_api_base_url: https://models.github.ai/inference
+  # model: model-name
+
+  temperature: 1.0
+  # max_tokens: 500
+  context_length: 4096
+  stop_sequences: []
+  timeout: 60
 myai:
   system_instruction:
     - text: "You are a helpful assistant."
@@ -41,10 +54,10 @@ myai:
       max_instances: 10
     - name: get_weather
       max_instances: 10
-    mcps:
-    - name: customers
-      url: http://localhost:8079/mcp
-      transport: streamable_http
+    mcps: []
+    # - name: customers
+    #   url: http://localhost:8079/mcp
+    #   transport: streamable_http
 
 hams:
   url: http://0.0.0.0:8079

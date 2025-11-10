@@ -6,7 +6,7 @@ import logging
 from chatbot.hams import Hams, hams_app_create
 from chatbot.service import service_app_create
 from chatbot.azurebot import azure_app_create
-from .mcp import mcp_app_create
+from .mcp_client import mcp_app_create
 from chatbot.llmconversationhandler import langchain_app_create
 from chatbot import keys
 
