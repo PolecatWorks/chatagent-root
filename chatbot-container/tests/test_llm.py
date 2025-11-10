@@ -155,11 +155,12 @@ from deepeval.metrics import GEval
 
 
 
-
+@pytest.mark.skip(
+    "Skipping temporarily as it requires secrets"
+)
 async def test_llmconversation_handler(llm_conversation_handler, llm_deep_eval, enable_livellm):
 
-    if not enable_livellm:
-        pytest.skip("Skipped unless --enable-livellm is set")
+    print("Starting LLMConversationHandler test")
 
     my_question = "What tools do you have available"
     my_reply = await llm_conversation_handler.chat("Convo0", "id0", my_question)
