@@ -61,8 +61,8 @@ class ToolRegistry:
     def register_tool(self, tool: StructuredTool) -> None:
         """Registers the tools with the client."""
 
-        if not callable(tool):
-            raise ValueError(f"Tool {tool} is not callable.")
+        # if not callable(tool):
+        #     raise ValueError(f"Tool {tool} is not callable.")
 
         tool_name = tool.name
 

@@ -8,7 +8,7 @@ DOCKER=docker
 BASE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 
-python_apps:=chatbot mcp
+python_apps:=chatbot mcp a2a
 
 chatbot_CMD=chatbot
 mcp_CMD=mcp
@@ -18,6 +18,9 @@ mcp_PORT=8180
 
 chatbot_HEALTH_PORT=8079
 mcp_HEALTH_PORT=8179
+
+a2a_PORT=8280
+a2a_HEALTH_PORT=8279
 
 
 guard-%:
@@ -42,8 +45,10 @@ $(foreach app,$(python_apps),$(app)-venv):%-venv:
 
 .PRECIOUS: $(foreach app,$(python_apps),$(app)-venv)
 
-$(foreach app,$(python_apps),$(app)-venv/bin/adev):%-venv/bin/adev:%-venv
-$(foreach app,$(python_apps),$(app)-venv/bin/pytest):%-venv/bin/pytest:%-venv
+
+
+$(foreach app,chatbot mcp,$(app)-venv/bin/adev):%-venv/bin/adev:%-venv
+$(foreach app,chatbot mcp,$(app)-venv/bin/pytest):%-venv/bin/pytest:%-venv
 	@echo creating development tools for $*
 	@source $*-venv/bin/activate && cd $*-container && poetry install --with dev && pip install -e .[dev] && deactivate && cd ..
 
@@ -53,9 +58,15 @@ $(foreach app,$(python_apps),$(app)-run):%-run: %-venv
 	${BASE_DIR}$*-venv/bin/${$*_CMD} start --secrets tests/test_data/secrets --config tests/test_data/config.yaml
 
 
-$(foreach app,$(python_apps),$(app)-dev):%-dev: %-venv/bin/adev
+$(foreach app,chatbot mcp,$(app)-dev):%-dev: %-venv/bin/adev
 	cd $*-container && \
 	${BASE_DIR}$*-venv/bin/adev runserver --port ${$*_PORT}
+
+
+a2a-dev:%-dev: %-venv/bin/fastapi
+	cd $*-container && \
+	fastapi dev -e app:create_app --port ${$*_PORT}
+
 
 $(foreach app,$(python_apps),$(app)-test):%-test: %-venv/bin/pytest
 	cd $*-container && \
@@ -182,7 +193,7 @@ pg-test-forward:
 
 
 ngrok:
-	ngrok http --host-header=rewrite --url=informally-large-terrier.ngrok-free.app 8080
+	ngrok http --host-header=rewrite --url=informally-large-terrier.ngrok-free.app ${chatbot_PORT}
 ngrok-python-dev:
 	ngrok http --host-header=rewrite --url=informally-large-terrier.ngrok-free.app 8000
 ngrok-python:
