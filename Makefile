@@ -74,7 +74,7 @@ $(foreach app,$(python_apps),$(app)-test):%-test: %-venv/bin/pytest
 
 $(foreach app,$(python_apps),$(app)-ptw):%-ptw: %-venv/bin/pytest
 	cd $*-container && \
-	${BASE_DIR}$*-venv/bin/ptw --runner ${BASE_DIR}$*-venv/bin/pytest --now --pdb . -- --enable-livellm
+	${BASE_DIR}$*-venv/bin/ptw --runner ${BASE_DIR}$*-venv/bin/pytest --pdb . -- --enable-livellm
 
 
 $(foreach app,$(python_apps),$(app)-docker):%-docker:

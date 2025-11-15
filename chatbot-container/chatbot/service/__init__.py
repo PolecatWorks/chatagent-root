@@ -6,7 +6,6 @@ from chatbot.service.state import Events
 from chatbot.hams import Hams, hams_app_create
 from chatbot.config import ServiceConfig
 from chatbot.service.webview import ChunkView, LLMChatView
-from chatbot.azurebot.webview import AzureBotView
 
 from chatbot import keys
 from aiohttp import web
