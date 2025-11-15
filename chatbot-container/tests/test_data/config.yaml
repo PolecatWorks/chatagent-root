@@ -20,14 +20,13 @@ logging:
     handlers: [console]
     level: INFO
 # bot:
+#   app_id: "" # Disable bot authentication for dev
+#   app_password: "" # Disable bot authentication for dev
 #   app_id: bot/id
 #   app_password: bot/passord
 webservice:
   url: http://0.0.0.0:8080
   prefix: pie/v0
-bot:
-  app_id: "" # Disable bot authentication for dev
-  app_password: "" # Disable bot authentication for dev
 aiclient:
   model: gemini-2.0-flash
   model_provider: google_genai

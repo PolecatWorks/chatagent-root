@@ -15,7 +15,23 @@ from datetime import timedelta
 import os
 
 
-class BotConfig(BaseModel):
+class AzureBotClientConfig(BaseModel):
+    """
+    Configuration for the Azure Bot Client
+    """
+
+    CLIENTID: str = Field(
+        description="Azure Bot Client ID",
+    )
+    CLIENTSECRET: SecretStr = Field(
+        description="Azure Bot Client Secret",
+    )
+    TENANTID: str = Field(
+        description="Azure Tenant ID",
+    )
+
+
+class ChatBotConfig(BaseModel):
     """
     Configuration for the bot
     """
@@ -24,13 +40,8 @@ class BotConfig(BaseModel):
         default="/api/messages",
         description="Path to the bot API",
     )
-    app_id: str = Field(
-        # default=DefaultConfig.APP_ID,
-        description="Microsoft App ID",
-    )
-    app_password: SecretStr = Field(
-        # default=DefaultConfig.APP_PASSWORD,
-        description="Microsoft App Password",
+    azure_bot_client: AzureBotClientConfig = Field(
+        description="Azure Bot Client configuration",
     )
 
 
@@ -171,7 +182,7 @@ class ServiceConfig(BaseSettings):
     """
 
     logging: dict[str, Any] = Field(description="Logging configuration")
-    bot: BotConfig = Field(description="Bot configuration")
+    bot: ChatBotConfig = Field(description="Bot configuration")
     aiclient: LangchainConfig = Field(description="AI Client configuration")
     myai: MyAiConfig = Field(description="MyAI bot configuration")
 
@@ -180,6 +191,7 @@ class ServiceConfig(BaseSettings):
     events: EventConfig = Field(description="Process costs for events")
 
     model_config = {
+        # "env_prefix": "SERVICE_",
         "secrets_nested_subdir": True  # Prevents additional fields not defined in the model
     }
 

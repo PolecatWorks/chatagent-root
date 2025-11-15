@@ -4,7 +4,7 @@ from prometheus_client import CollectorRegistry
 from pydantic_yaml import to_yaml_str
 import logging
 from chatbot.hams import Hams, hams_app_create
-from chatbot.service import service_app_create
+# from chatbot.service import service_app_create
 from chatbot.azurebot import azure_app_create
 from .mcp_client import mcp_app_create
 from chatbot.llmconversationhandler import langchain_app_create
@@ -43,7 +43,7 @@ def app_init(app: web.Application, config: ServiceConfig):
     metrics_app_create(app)
     hams_app_create(app, config.hams)
     mcp_app_create(app, config)
-    service_app_create(app, config)
+    # service_app_create(app, config)
     azure_app_create(app, config)
 
     langchain_app_create(app, config)

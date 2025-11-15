@@ -24,7 +24,7 @@ from langchain_core.messages import (
     SystemMessage,
     AIMessage,
 )
-from botbuilder.schema import ConversationAccount
+# from botbuilder.schema import ConversationAccount
 from langchain_core.language_models import BaseChatModel
 
 from prometheus_client import REGISTRY, CollectorRegistry, Summary
@@ -273,39 +273,39 @@ class LLMConversationHandler:
         """Registers the tools with the client."""
         self.function_registry.register_tools(tools)
 
-    async def upload(
-        self,
-        conversation: ConversationAccount,
-        name: str,
-        mime_type: str,
-        file_bytes: bytes,
-    ) -> None:
-        """Uploads a file to the AI model messages.
-        This method encodes the file bytes to base64 and prepares it for the AI model.
+    # async def upload(
+    #     self,
+    #     conversation: ConversationAccount,
+    #     name: str,
+    #     mime_type: str,
+    #     file_bytes: bytes,
+    # ) -> None:
+    #     """Uploads a file to the AI model messages.
+    #     This method encodes the file bytes to base64 and prepares it for the AI model.
 
-        Returns:
-            None
-        """
-        messages = self.get_conversation(conversation)
+    #     Returns:
+    #         None
+    #     """
+    #     messages = self.get_conversation(conversation)
 
-        encoded = base64.b64encode(file_bytes).decode("utf-8")
+    #     encoded = base64.b64encode(file_bytes).decode("utf-8")
 
-        messages.append(
-            HumanMessage(
-                content=[
-                    {
-                        "type": "file",
-                        "source_type": "base64",
-                        "data": encoded,
-                        "mine_type": mime_type,
-                        "filename": name,
-                    }
-                ]
-            )
-        )
+    #     messages.append(
+    #         HumanMessage(
+    #             content=[
+    #                 {
+    #                     "type": "file",
+    #                     "source_type": "base64",
+    #                     "data": encoded,
+    #                     "mine_type": mime_type,
+    #                     "filename": name,
+    #                 }
+    #             ]
+    #         )
+    #     )
 
-        logger.debug("File added to conversation but not sent to LLM yet.")
-        return None
+    #     logger.debug("File added to conversation but not sent to LLM yet.")
+    #     return None
 
     async def chat(
         self, conversation_id: str, identity: str, prompt: str
