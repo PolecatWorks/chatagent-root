@@ -6,7 +6,6 @@ from chatbot.config import ServiceConfig
 from chatbot.llmconversationhandler import LLMConversationHandler, langchain_app_create, langchain_model
 from chatbot.mcp_client import mcp_app_create
 import pytest
-from botbuilder.schema import ConversationAccount
 
 from deepeval.models.base_model import DeepEvalBaseLLM
 

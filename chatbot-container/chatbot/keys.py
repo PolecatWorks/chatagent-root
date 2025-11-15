@@ -7,9 +7,15 @@ hams = aiohttp.web.AppKey("hams")
 events = aiohttp.web.AppKey("events")
 coroutine = aiohttp.web.AppKey("coroutine")
 webservice = aiohttp.web.AppKey("webservice")
-botsettings = aiohttp.web.AppKey("botsettings")
-botadapter = aiohttp.web.AppKey("botadapter")
-bot = aiohttp.web.AppKey("bot")
+
+storage = aiohttp.web.AppKey("storage")
+cloud_adapter = aiohttp.web.AppKey("cloud_adapter")
+agent_app = aiohttp.web.AppKey("agent_app")
+
+
+# botsettings = aiohttp.web.AppKey("botsettings")
+# botadapter = aiohttp.web.AppKey("botadapter")
+# bot = aiohttp.web.AppKey("bot")
 
 # The key for the Gemini service, used to store and retrieve Gemini-related data
 # and configurations in the aiohttp application context.

@@ -2,7 +2,6 @@ from aiohttp import web
 from chatbot.service.state import Events
 from pydantic import BaseModel, ValidationError
 import logging
-from botbuilder.schema import ConversationAccount
 from chatbot import keys
 
 
