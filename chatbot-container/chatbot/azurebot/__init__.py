@@ -5,7 +5,6 @@ import re
 from chatbot.azurebot.webview import AzureBotView
 from chatbot.config import ChatBotConfig
 from chatbot import keys
-from customer.config import ServiceConfig
 from microsoft_agents.hosting.core import (
     Authorization,
     AgentApplication,
@@ -13,6 +12,7 @@ from microsoft_agents.hosting.core import (
     TurnContext,
     MemoryStorage,
 )
+from chatbot.config import ServiceConfig
 from microsoft_agents.authentication.msal import MsalConnectionManager
 from microsoft_agents.hosting.aiohttp import CloudAdapter
 
