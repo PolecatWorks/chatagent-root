@@ -3,7 +3,7 @@ from aiohttp import web
 
 from chatbot import config_app_create, keys, metrics_app_create
 from chatbot.config import ServiceConfig
-from chatbot.llmconversationhandler import LLMConversationHandler, langchain_app_create
+from chatbot.langgraphhandler import LanggraphHandler, langgraph_app_create
 from chatbot.mcp_client import mcp_app_create
 import pytest
 
@@ -37,7 +37,7 @@ def server():
     config_app_create(app, config)
     metrics_app_create(app)
     mcp_app_create(app, config)
-    langchain_app_create(app, config)
+    langgraph_app_create(app, config)
 
     runner = web.AppRunner(app)
     asyncio.run(runner.setup())

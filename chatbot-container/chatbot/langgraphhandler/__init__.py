@@ -9,12 +9,12 @@ import logging
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from chatbot.hams import config
-from chatbot.llmconversationhandler import toolregistry
+from chatbot.langgraphhandler import toolregistry
 from chatbot.mcp_client import MCPObjects
 from chatbot.config import LangchainConfig
 from langchain_core.tools.structured import StructuredTool
 import langgraph
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import ToolNode, tools_condition
 from langchain_core.runnables import RunnableConfig
 
@@ -52,19 +52,17 @@ async def bind_tools_when_ready(app: web.Application):
         logger.error("MCPObjects not found in app context. Cannot bind tools.")
         raise ValueError("MCPObjects not found in app context.")
 
-    llmHandler: LLMConversationHandler = app[keys.llmhandler]
+    llmHandler: LanggraphHandler = app[keys.llmhandler]
 
     mcpObjects: MCPObjects = app[keys.mcpobjects]
 
     llmHandler.register_tools(mcpObjects.tools)
-
     llmHandler.bind_tools()
-
     llmHandler.compile()
 
 
 
-def langchain_model(config: LangchainConfig):
+def llm_model(config: LangchainConfig):
     httpx_client = httpx.Client(verify=config.httpx_verify_ssl)
 
     match config.model_provider:
@@ -96,24 +94,28 @@ def langchain_model(config: LangchainConfig):
 
 
 
-def langchain_app_create(app: web.Application, config: ServiceConfig):
+def langgraph_app_create(app: web.Application, config: ServiceConfig):
     """
     Initialize the AI client and add it to the aiohttp application context.
     """
-    model = langchain_model(config.aiclient)
+    if keys.metrics not in app:
+        logger.error("Metrics registry not found in app context. Cannot initialize LLMConversationHandler.")
+        raise ValueError("Metrics registry not found in app context.")
+
+
+    model = llm_model(config.aiclient)
 
     # use bind_tools_when_ready to move some of the constructions funtions to an async runtime
     app.on_startup.append(bind_tools_when_ready)
 
-    registry = REGISTRY if keys.metrics not in app else app[keys.metrics]
 
-    llmHandler = LLMConversationHandler(config.myai, model, registry=registry)
-    llmHandler.register_tools(mytools)
+    langgraph_handler = LanggraphHandler(config.myai, model, registry=app[keys.metrics])
+    langgraph_handler.register_tools(mytools)
 
-    app[keys.llmhandler] = llmHandler
+    app[keys.llmhandler] = langgraph_handler
 
 
-class LLMConversationHandler:
+class LanggraphHandler:
     """
     General Interface for interacting with LLM AI.
     This class handles the interaction with the LLM, handles the context and
@@ -163,7 +165,7 @@ class LLMConversationHandler:
 
         self.workflow = workflow
 
-        self.memory = MemorySaver()
+        self.memory = InMemorySaver()
 
     @staticmethod
     def get_graph_config(conversation_id: str, **kwargs) -> RunnableConfig:
@@ -182,7 +184,6 @@ class LLMConversationHandler:
         print(f"Graph config: {config_dict}")
         # return config_dict
         return RunnableConfig(configurable={"thread_id": conversation_id, **kwargs})
-        return RunnableConfig(config_dict)
 
     async def _call_llm(self, state: AgentState) -> dict:
         """
@@ -195,10 +196,6 @@ class LLMConversationHandler:
         # or an AIMessage with tool_calls if tools are called.
         # We append it to the list of messages to be included in the state.
 
-        # TODO: Check do we append existing messages or just the response?
-
-        # print(f"LLM response: {response}")
-        # print(f"messages: {messages}")
         return {"messages": messages + [response]}
 
     async def _call_tool(self, *args, **kwargs) -> dict:
@@ -249,7 +246,7 @@ class LLMConversationHandler:
         logger.info(f"Binding tools: {[tool.name for tool in all_tools]}")
 
         self.client = self.client.bind_tools(all_tools)
-        self.toolnode = ToolNode(tools=all_tools)
+        self.toolnode = ToolNode(tools=all_tools, name="my_tools")
 
         # self.workflow.add_node("my_tools", self._call_tool)
         self.workflow.add_node("my_tools", self.toolnode)
@@ -264,6 +261,9 @@ class LLMConversationHandler:
         self.graph = self.workflow.compile(checkpointer=self.memory)
 
         print(self.graph.get_graph().draw_ascii())
+
+        print("Workflow as Mermaid")
+        print(self.graph.get_graph().draw_mermaid())
 
         logger.info("Graph compiled successfully.")
 
@@ -327,12 +327,12 @@ class LLMConversationHandler:
         graph_config = self.get_graph_config(conversation_id, identity=identity)
         logger.debug(f"Graph config: {graph_config}")
 
-        graph_input = {"messages": [HumanMessage(content=prompt)]}
+        agent_state = {"messages": [HumanMessage(content=prompt)]}
 
         if not hasattr(self, "graph"):
             raise ValueError("Graph not yet compiled")
 
-        final_graph_state = await self.graph.ainvoke(graph_input, config=graph_config)
+        final_graph_state = await self.graph.ainvoke(agent_state, config=graph_config)
 
         # Extract the final messages from the graph's output state
         final_messages = final_graph_state["messages"]

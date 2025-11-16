@@ -1,4 +1,5 @@
 
+import sys
 from aiohttp import web
 import traceback
 import re
@@ -17,6 +18,7 @@ from microsoft_agents.authentication.msal import MsalConnectionManager
 from microsoft_agents.hosting.aiohttp import CloudAdapter
 
 import logging
+import asyncio
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -71,7 +73,16 @@ def azure_app_create(app: web.Application, config: ServiceConfig)  -> web.Applic
 
     @AGENT_APP.activity("message")
     async def on_message(context: TurnContext, _state: TurnState):
+        context.streaming_response.queue_informative_update(
+            "Working on a response for you..."
+        )
+        await asyncio.sleep(3)
+
         await context.send_activity(f"you said: {context.activity.text}")
+
+        await context.send_activity("This is where you would integrate with the LLMConversationHandler.")
+
+
 
 
     @AGENT_APP.error

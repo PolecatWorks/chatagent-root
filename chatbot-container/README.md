@@ -27,6 +27,29 @@ This sample **requires** prerequisites in order to run.
 - Enter a Bot URL of `http://localhost:3978/api/messages`
 
 
+# LangGraph Graph
+this it the graph of the nodes used to capture the conversational graph.
+
+```mermaid
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+        __start__([<p>__start__</p>]):::first
+        chatbot(chatbot)
+        my_tools(my_tools)
+        __end__([<p>__end__</p>]):::last
+        __start__ --> chatbot;
+        chatbot -.-> __end__;
+        chatbot -. &nbsp;call_tool&nbsp; .-> my_tools;
+        my_tools --> chatbot;
+        classDef default fill:#f2f0ff,line-height:1.2
+        classDef first fill-opacity:0
+        classDef last fill:#bfb6fc
+```
+
 ## Further reading
 
 - [Bot Framework Documentation](https://docs.botframework.com)

@@ -3,7 +3,7 @@ from aiohttp import web
 
 from chatbot import config_app_create, keys, metrics_app_create
 from chatbot.config import ServiceConfig
-from chatbot.llmconversationhandler import LLMConversationHandler, langchain_app_create, langchain_model
+from chatbot.langgraphhandler import LanggraphHandler, langgraph_app_create, llm_model
 from chatbot.mcp_client import mcp_app_create
 import pytest
 
@@ -30,7 +30,7 @@ def config() -> ServiceConfig:
 
 @pytest.fixture
 def llm_model(config: ServiceConfig):
-    return langchain_model(config.aiclient)
+    return llm_model(config.aiclient)
 
 
 class LangChainDeepEval(DeepEvalBaseLLM):
@@ -76,7 +76,7 @@ def llm_app(enable_livellm):
         metrics_app_create(app)
         mcp_app_create(app, config)
 
-        langchain_app_create(app, config)
+        langgraph_app_create(app, config)
 
     return app
 
@@ -91,15 +91,15 @@ async def service_client(aiohttp_client, llm_app):
 
 
 @pytest.fixture
-async def llm_conversation_handler(config: ServiceConfig) -> LLMConversationHandler:
+async def llm_conversation_handler(config: ServiceConfig) -> LanggraphHandler:
     """
     Fixture to provide the LLMConversationHandler instance for testing.
     This can be used to test the conversation handler methods directly.
     """
 
-    model = langchain_model(config.aiclient)
+    model = llm_model(config.aiclient)
 
-    llm_handler = LLMConversationHandler(config.myai, model)
+    llm_handler = LanggraphHandler(config.myai, model)
 
     # Do not include MCP here
     llm_handler.bind_tools()
