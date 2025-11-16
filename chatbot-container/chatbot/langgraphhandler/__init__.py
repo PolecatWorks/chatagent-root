@@ -52,13 +52,13 @@ async def bind_tools_when_ready(app: web.Application):
         logger.error("MCPObjects not found in app context. Cannot bind tools.")
         raise ValueError("MCPObjects not found in app context.")
 
-    llmHandler: LanggraphHandler = app[keys.llmhandler]
+    langgraph_handler: LanggraphHandler = app[keys.langgraph_handler]
 
     mcpObjects: MCPObjects = app[keys.mcpobjects]
 
-    llmHandler.register_tools(mcpObjects.tools)
-    llmHandler.bind_tools()
-    llmHandler.compile()
+    langgraph_handler.register_tools(mcpObjects.tools)
+    langgraph_handler.bind_tools()
+    langgraph_handler.compile()
 
 
 
@@ -112,7 +112,7 @@ def langgraph_app_create(app: web.Application, config: ServiceConfig):
     langgraph_handler = LanggraphHandler(config.myai, model, registry=app[keys.metrics])
     langgraph_handler.register_tools(mytools)
 
-    app[keys.llmhandler] = langgraph_handler
+    app[keys.langgraph_handler] = langgraph_handler
 
 
 class LanggraphHandler:

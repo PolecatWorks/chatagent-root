@@ -19,6 +19,6 @@ agent_app = aiohttp.web.AppKey("agent_app")
 
 # The key for the Gemini service, used to store and retrieve Gemini-related data
 # and configurations in the aiohttp application context.
-llmhandler = aiohttp.web.AppKey("llmhandler")
+langgraph_handler = aiohttp.web.AppKey("langgraph_handler")
 
 mcpobjects = aiohttp.web.AppKey("mcptools")
