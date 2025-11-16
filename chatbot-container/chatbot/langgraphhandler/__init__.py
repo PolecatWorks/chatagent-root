@@ -17,6 +17,7 @@ import langgraph
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import ToolNode, tools_condition
 from langchain_core.runnables import RunnableConfig
+from langchain_core.messages.base import BaseMessage
 
 
 from langchain_core.messages import (
@@ -306,6 +307,50 @@ class LanggraphHandler:
 
     #     logger.debug("File added to conversation but not sent to LLM yet.")
     #     return None
+
+    async def invoke_agent(
+        self, prompt: str, chat_history: list[BaseMessage]
+    ) -> str:
+        """Invoke the agent with the given prompt and chat history.
+        This method prepares the messages, calls the graph, and returns the response.
+
+        Args:
+            prompt (str): The user prompt
+            chat_history (list[BaseMessage]): The chat history
+
+        Returns:
+            str: The response from the agent
+        """
+
+        agent_state = {"messages": chat_history + [HumanMessage(content=prompt)]}
+
+        if not hasattr(self, "graph"):
+            raise ValueError("Graph not yet compiled")
+
+        temp_graph_confi = RunnableConfig(configurable={"thread_id": "ABC"})
+
+
+        final_graph_state = await self.graph.ainvoke(agent_state, config=temp_graph_confi)
+
+        # Extract the final messages from the graph's output state
+        final_messages = final_graph_state["messages"]
+
+        # The last message in the final_messages list should be the AI's response
+        final_response_message = final_messages[-1] if final_messages else None
+
+        logger.debug(f"Final response from graph: {final_response_message}")
+
+        if isinstance(final_response_message, AIMessage):
+            return final_response_message.content
+        elif final_response_message is None:
+            logger.error("Graph execution resulted in no messages.")
+            return "Sorry, I encountered an issue and couldn't generate a response."
+        else:
+            logger.error(
+                f"Unexpected final response type from graph: {type(final_response_message)}"
+            )
+            return "Sorry, I encountered an error processing your request."
+
 
     async def chat(
         self, conversation_id: str, identity: str, prompt: str

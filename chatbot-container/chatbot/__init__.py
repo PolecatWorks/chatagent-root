@@ -44,9 +44,9 @@ def app_init(app: web.Application, config: ServiceConfig):
     hams_app_create(app, config.hams)
     mcp_app_create(app, config)
     # service_app_create(app, config)
+    langgraph_app_create(app, config)
     azure_app_create(app, config)
 
-    langgraph_app_create(app, config)
 
     return app
 

@@ -8,6 +8,7 @@ from chatbot.azurebot.webview import AzureBotView
 from chatbot.config import ChatBotConfig
 from chatbot import keys
 
+from chatbot.langgraphhandler import LanggraphHandler
 from microsoft_agents.hosting.core import (
     Authorization,
     AgentApplication,
@@ -53,6 +54,12 @@ class ChatHistoryStoreItem(StoreItem):
 
 def azure_app_create(app: web.Application, config: ServiceConfig)  -> web.Application:
     """Create the Azure Bot related routes and handlers."""
+
+
+    if keys.langgraph_handler not in app:
+        raise RuntimeError("langgraph_handler is missing from app; ensure it's registered before calling azure_app_create.")
+
+    langgraph_handler: LanggraphHandler = app[keys.langgraph_handler]
 
     agents_sdk_config=  {
         'AGENTAPPLICATION': {},
@@ -105,9 +112,17 @@ def azure_app_create(app: web.Application, config: ServiceConfig)  -> web.Applic
         chat_history_store_item = state.get_value(
             "ConversationState.chatHistory", lambda: ChatHistoryStoreItem(), target_cls=ChatHistoryStoreItem
         )
-        # agent_response = await AGENT.invoke_agent(context.activity.text, chat_history_store_item.chat_history)
 
-        await asyncio.sleep(3)
+        # Check whether langgraph_handler has attribute 'graph'
+        if not hasattr(langgraph_handler, "graph"):
+            await context.send_activity("LanggraphHandler is missing the attribute 'graph'.")
+        else:
+            graph = getattr(langgraph_handler, "graph")
+            logger.debug("langgraph_handler.graph found: %s", type(graph))
+            await context.send_activity("I was able to find the hanlder and graph")
+
+        response = await langgraph_handler.invoke_agent(context.activity.text, chat_history_store_item.chat_history.messages)
+        await context.send_activity(response)
 
         await context.send_activity(f"you said: {context.activity.text}")
 
@@ -126,9 +141,6 @@ def azure_app_create(app: web.Application, config: ServiceConfig)  -> web.Applic
 
         # Send a message to the user
         await context.send_activity("The bot encountered an error or bug.")
-
-
-
 
 
     app.add_routes([web.view(config.bot.api_path, AzureBotView)])
