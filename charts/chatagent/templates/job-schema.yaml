@@ -2,16 +2,16 @@
 {{- if .Values.schema }}
 {{- $config := .Values.schema }}
 {{- with (dict "Values" $config "Release" $top.Release "Chart" $top.Chart "Files" $top.Files "Capabilities" $top.Capabilities "Template" $top.Template ) }}
-{{- $configsha := tpl (include "chatbot.config" .) . | sha256sum }}
+{{- $configsha := tpl (include "chatagent.config" .) . | sha256sum }}
 {{- $configshamini := substr 0 8 $configsha }}
 {{- $volumesha := tpl (toYaml .Values.volumes) . | sha256sum }}
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "{{ template "chatbot.fullname" . }}-schema-{{ $configshamini }}"
+  name: "{{ template "chatagent.fullname" . }}-schema-{{ $configshamini }}"
   labels:
-  {{- include "chatbot.labels" . | nindent 4 }}
+  {{- include "chatagent.labels" . | nindent 4 }}
 spec:
   backoffLimit: {{ .Values.backoffLimit }}
   template:
@@ -21,7 +21,7 @@ spec:
         checksum/volumes: {{ $volumesha }}
       labels:
         component: schema-job
-        {{- include "chatbot.selectorLabels" . | nindent 8 }}
+        {{- include "chatagent.selectorLabels" . | nindent 8 }}
     spec:
       restartPolicy: OnFailure
       {{- with .Values.imagePullSecrets }}
@@ -40,11 +40,11 @@ spec:
       tolerations:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      volumes: {{- include "chatbot.volumes" . | nindent 8 }}
+      volumes: {{- include "chatagent.volumes" . | nindent 8 }}
       containers:
-        - name: {{ template "chatbot.fullname" . }}-schema
+        - name: {{ template "chatagent.fullname" . }}-schema
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default  .Chart.AppVersion }}"
-          env: {{- include "chatbot.env" . | nindent 12 }}
+          env: {{- include "chatagent.env" . | nindent 12 }}
           command: {{- .Values.command | toYaml | nindent 10 }}
           {{- with .Values.args }}
           args: {{- toYaml . | nindent 10 }}

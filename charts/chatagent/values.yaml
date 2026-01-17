@@ -21,7 +21,7 @@ readinessProbe:
   periodSeconds: 5
 
 image: &image
-  repository: polecatworks/chatbot-root
+  repository: polecatworks/chatagent-root
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -113,7 +113,7 @@ secretName: null
 volumes: &volumes
   - name: configs
     configMap:
-      name: "{{ template \"chatbot.fullname\" . }}"
+      name: "{{ template \"chatagent.fullname\" . }}"
   # - name: objects
   #   emptyDir:
   #     sizeLimit: 500Mi
@@ -122,7 +122,7 @@ volumes: &volumes
       sources:
         - secret:
             # optional: true
-            name: "{{ .Values.secretName | default (include \"chatbot.fullname\" .) }}"
+            name: "{{ .Values.secretName | default (include \"chatagent.fullname\" .) }}"
             items:
               - key: app_password
                 path: bot/app_password

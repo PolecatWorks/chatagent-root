@@ -12,7 +12,7 @@ logging:
       level: INFO
       stream: ext://sys.stdout
   loggers:
-    chatbot.hams:
+    chatagent.hams:
       handlers: [console]
       level: WARNING
       propagate: False

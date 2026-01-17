@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "chatbot.fullname" . }}
+  name: {{ include "chatagent.fullname" . }}
   labels:
-    {{- include "chatbot.labels" . | nindent 4 }}
+    {{- include "chatagent.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "chatbot.fullname" . }}
+    name: {{ include "chatagent.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:

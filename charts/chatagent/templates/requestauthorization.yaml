@@ -3,13 +3,13 @@
 apiVersion: "security.istio.io/v1beta1"
 kind: RequestAuthentication
 metadata:
-  name: {{ include "chatbot.fullname" . }}
+  name: {{ include "chatagent.fullname" . }}
   labels:
-    {{- include "chatbot.labels" . | nindent 4 }}
+    {{- include "chatagent.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "chatbot.selectorLabels" . | nindent 6 }}
+      {{- include "chatagent.selectorLabels" . | nindent 6 }}
   #   peers:
   #   - mtls: {}
   jwtRules:
