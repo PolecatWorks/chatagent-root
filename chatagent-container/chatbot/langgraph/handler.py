@@ -1,119 +1,32 @@
-import asyncio
-import base64
-from typing import Any
-from collections.abc import Sequence, Callable  # For List and Callable
-from chatbot.config import MyAiConfig, ServiceConfig
-from aiohttp import web
-from chatbot import keys
-import logging
-from dataclasses import dataclass
-from abc import ABC, abstractmethod
-from chatbot.hams import config
-from chatbot.langgraphhandler import toolregistry
-from chatbot.mcp_client import MCPObjects
-from chatbot.config import LangchainConfig
-from langchain_core.tools.structured import StructuredTool
-import langgraph
-from langgraph.checkpoint.memory import InMemorySaver
-from langgraph.prebuilt import ToolNode, tools_condition
-from langchain_core.runnables import RunnableConfig
-from langchain_core.messages.base import BaseMessage
 
 
+from collections.abc import Sequence
+from chatbot.chathistory import ChatHistory
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
     AIMessage,
 )
-# from botbuilder.schema import ConversationAccount
 from langchain_core.language_models import BaseChatModel
 
-from prometheus_client import REGISTRY, CollectorRegistry, Summary
-from chatbot.tools import mytools
-from langchain.chat_models import init_chat_model
-import httpx
 
 from langgraph.graph import StateGraph, END, START
-from .graph_state import AgentState
+from prometheus_client import REGISTRY, CollectorRegistry, Summary
+import langgraph
+from langgraph.checkpoint.memory import InMemorySaver
+from langchain_core.runnables import RunnableConfig
+from langgraph.prebuilt import ToolNode, tools_condition
+from langchain_core.tools.structured import StructuredTool
 
+from .agentstate import AgentState
+
+from chatbot.langgraph import toolregistry
+
+import logging
 # Set up logging
 logger = logging.getLogger(__name__)
 
 
-async def bind_tools_when_ready(app: web.Application):
-    """
-    Wait for the mcptools to be constructed then bind to them
-    """
-    # TODO: Do we need to wait for the mcpobjects to be ready?
-    # This is called on startup, so we expect the mcpobjects to be set by
-    # the mcp_app_create function before this is called.
-
-    if keys.mcpobjects not in app:
-        # If the mcpobjects key is not in the app, we cannot proceed
-        logger.error("MCPObjects not found in app context. Cannot bind tools.")
-        raise ValueError("MCPObjects not found in app context.")
-
-    langgraph_handler: LanggraphHandler = app[keys.langgraph_handler]
-
-    mcpObjects: MCPObjects = app[keys.mcpobjects]
-
-    langgraph_handler.register_tools(mcpObjects.tools)
-    langgraph_handler.bind_tools()
-    langgraph_handler.compile()
-
-
-
-def llm_model(config: LangchainConfig):
-    httpx_client = httpx.Client(verify=config.httpx_verify_ssl)
-
-    match config.model_provider:
-        case "google_genai":
-            from langchain_google_genai import ChatGoogleGenerativeAI
-
-            model = ChatGoogleGenerativeAI(
-                model=config.model,
-                google_api_key=config.google_api_key.get_secret_value(),
-                # http_client=httpx_client,
-            )
-        case "azure_openai":
-            from langchain_openai import AzureChatOpenAI
-
-            # https://python.langchain.com/api_reference/openai/llms/langchain_openai.llms.azure.AzureOpenAI.html#langchain_openai.llms.azure.AzureOpenAI.http_client
-            model = AzureChatOpenAI(
-                model=config.model,
-                azure_endpoint=str(config.azure_endpoint),
-                api_version=config.azure_api_version,
-                api_key=config.azure_api_key.get_secret_value(),
-                http_client=httpx_client,
-            )
-        case _:
-            raise ValueError(
-                f"Unsupported model provider: {config.model_provider}"
-            )
-
-    return model
-
-
-
-def langgraph_app_create(app: web.Application, config: ServiceConfig):
-    """
-    Initialize the AI client and add it to the aiohttp application context.
-    """
-    if keys.metrics not in app:
-        logger.error("Metrics registry not found in app context. Cannot initialize LLMConversationHandler.")
-        raise ValueError("Metrics registry not found in app context.")
-
-
-    model = llm_model(config.aiclient)
-
-    # use bind_tools_when_ready to move some of the constructions funtions to an async runtime
-    app.on_startup.append(bind_tools_when_ready)
-
-
-    langgraph_handler = LanggraphHandler(config.myai, model, registry=app[keys.metrics])
-    langgraph_handler.register_tools(mytools)
-
-    app[keys.langgraph_handler] = langgraph_handler
 
 
 class LanggraphHandler:
@@ -190,14 +103,15 @@ class LanggraphHandler:
         """
         Node to call the language model.
         """
-        messages = state["messages"]
+        messages = state.messages
         with self.llm_summary_metric.time():
             response = await self.client.ainvoke(messages)
         # The response from ainvoke is already an AIMessage if no tool calls,
         # or an AIMessage with tool_calls if tools are called.
         # We append it to the list of messages to be included in the state.
 
-        return {"messages": messages + [response]}
+        new_state = state.model_copy(update={"messages": state.messages + [response]})
+        return new_state
 
     async def _call_tool(self, *args, **kwargs) -> dict:
         """
@@ -226,7 +140,7 @@ class LanggraphHandler:
         """
         Determines whether to call a tool or end the conversation turn.
         """
-        messages = state["messages"]
+        messages = state.messages
         last_message = messages[-1]
 
         if isinstance(last_message, AIMessage) and last_message.tool_calls:
@@ -308,8 +222,8 @@ class LanggraphHandler:
     #     logger.debug("File added to conversation but not sent to LLM yet.")
     #     return None
 
-    async def invoke_agent(
-        self, prompt: str, chat_history: list[BaseMessage]
+    async def ainvoke_agent(
+        self, prompt: str, chat_history: ChatHistory
     ) -> str:
         """Invoke the agent with the given prompt and chat history.
         This method prepares the messages, calls the graph, and returns the response.
@@ -321,16 +235,19 @@ class LanggraphHandler:
         Returns:
             str: The response from the agent
         """
-
-        agent_state = {"messages": chat_history + [HumanMessage(content=prompt)]}
+        print(f"ainvoke_agent called with prompt: {prompt} for chat_history: {chat_history}")
 
         if not hasattr(self, "graph"):
             raise ValueError("Graph not yet compiled")
 
-        temp_graph_confi = RunnableConfig(configurable={"thread_id": "ABC"})
+        # Update the messages object to add the new prompt as a human message (this is necessary for the store function later)
+        chat_history.messages.append(HumanMessage(content=prompt))
 
+        agent_state = AgentState.from_chat_history(chat_history)
 
-        final_graph_state = await self.graph.ainvoke(agent_state, config=temp_graph_confi)
+        temp_graph_config = RunnableConfig(configurable={"thread_id": "ABC"})
+
+        final_graph_state = await self.graph.ainvoke(agent_state, config=temp_graph_config)
 
         # Extract the final messages from the graph's output state
         final_messages = final_graph_state["messages"]

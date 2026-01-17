@@ -3,7 +3,7 @@ from aiohttp import web
 
 from chatbot import config_app_create, keys, metrics_app_create
 from chatbot.config import ServiceConfig
-from chatbot.langgraphhandler import LanggraphHandler, langgraph_app_create, llm_model
+from chatbot.langgraph import LanggraphHandler, langgraph_app_create, llm_model
 from chatbot.mcp_client import mcp_app_create
 import pytest
 

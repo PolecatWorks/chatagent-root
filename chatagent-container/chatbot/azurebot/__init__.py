@@ -4,11 +4,12 @@ from typing import Optional
 from aiohttp import web
 import traceback
 import re
+from chatbot.chathistory import ChatHistory
 from chatbot.azurebot.webview import AzureBotView
 from chatbot.config import ChatBotConfig
 from chatbot import keys
 
-from chatbot.langgraphhandler import LanggraphHandler
+from chatbot.langgraph.handler import LanggraphHandler
 from microsoft_agents.hosting.core import (
     Authorization,
     AgentApplication,
@@ -21,19 +22,14 @@ from chatbot.config import ServiceConfig
 from microsoft_agents.authentication.msal import MsalConnectionManager
 from microsoft_agents.hosting.aiohttp import CloudAdapter
 
-
 import logging
-import asyncio
+
 
 from pydantic import BaseModel
-from langchain_core.messages.base import BaseMessage
+
 
 # Set up logging
 logger = logging.getLogger(__name__)
-
-
-class ChatHistory(BaseModel):
-    messages: list[BaseMessage] = []
 
 
 class ChatHistoryStoreItem(StoreItem):
@@ -43,10 +39,17 @@ class ChatHistoryStoreItem(StoreItem):
         self.chat_history = chat_history or ChatHistory()
 
     def store_item_to_json(self) -> dict:
-        return self.chat_history.model_dump()
+        print("Storing ChatHistoryStoreItem to JSON")
+        print(type(self.chat_history))
+        model_json = self.chat_history.model_dump()
+        print(f"ch = {model_json}")
+        return model_json
 
     @staticmethod
-    def from_json_to_store_item(json_data: dict) -> "ChatHistoryStoreItem":
+    def from_json_to_store_item(json_data: dict) -> 'ChatHistoryStoreItem':
+        print("Loading ChatHistoryStoreItem from JSON")
+        print(type(json_data))
+        print(json_data)
         chat_history = ChatHistory.model_validate(json_data)
         return ChatHistoryStoreItem(chat_history)
 
@@ -115,20 +118,22 @@ def azure_app_create(app: web.Application, config: ServiceConfig)  -> web.Applic
 
         # Check whether langgraph_handler has attribute 'graph'
         if not hasattr(langgraph_handler, "graph"):
-            await context.send_activity("LanggraphHandler is missing the attribute 'graph'.")
+            await context.send_activity("LanggraphHandler LLM is not loaded correctly")
+            return
         else:
             graph = getattr(langgraph_handler, "graph")
             logger.debug("langgraph_handler.graph found: %s", type(graph))
-            await context.send_activity("I was able to find the hanlder and graph")
+            # await context.send_activity("I was able to find the hanlder and graph")
 
-        response = await langgraph_handler.invoke_agent(context.activity.text, chat_history_store_item.chat_history.messages)
-        await context.send_activity(response)
-
-        await context.send_activity(f"you said: {context.activity.text}")
+        print(f"chat_history in on_message: {type(chat_history_store_item.chat_history)} = {chat_history_store_item.chat_history}")
+        response = await langgraph_handler.ainvoke_agent(context.activity.text, chat_history_store_item.chat_history)
+        print(f"chat_history at end of on_message: {type(chat_history_store_item.chat_history)} = {chat_history_store_item.chat_history}")
 
         state.set_value("ConversationState.chatHistory", chat_history_store_item)
 
-        await context.send_activity("This is where you would integrate with the LLMConversationHandler.")
+        await context.send_activity(response)
+
+        # await context.send_activity("This is where you would integrate with the LLMConversationHandler.")
 
 
     @AGENT_APP.error

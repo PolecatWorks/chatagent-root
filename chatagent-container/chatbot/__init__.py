@@ -7,7 +7,7 @@ from chatbot.hams import Hams, hams_app_create
 # from chatbot.service import service_app_create
 from chatbot.azurebot import azure_app_create
 from .mcp_client import mcp_app_create
-from chatbot.langgraphhandler import langgraph_app_create
+from chatbot.langgraph import langgraph_app_create
 from chatbot import keys
 
 logger = logging.getLogger(__name__)

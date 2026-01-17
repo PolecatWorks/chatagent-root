@@ -31,7 +31,6 @@ This sample **requires** prerequisites in order to run.
 this it the graph of the nodes used to capture the conversational graph.
 
 ```mermaid
----
 config:
   flowchart:
     curve: linear
