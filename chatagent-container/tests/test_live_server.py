@@ -23,8 +23,9 @@ def server():
     """
 
     config_filename = "tests/test_data/config.yaml"
+    default_secrets = "tests/test_data/secrets" if os.path.exists("tests/test_data/secrets") else "tests/test_data/secrets_sample"
     secrets_dir = os.environ.get(
-        "TEST_SECRETS_DIR", "tests/test_data/secrets_sample"
+        "TEST_SECRETS_DIR", default_secrets
     )
 
     config: ServiceConfig = ServiceConfig.from_yaml(config_filename, secrets_dir)

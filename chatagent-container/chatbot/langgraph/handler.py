@@ -21,6 +21,7 @@ from langchain_core.tools.structured import StructuredTool
 from .agentstate import AgentState
 
 from chatbot.langgraph import toolregistry
+from chatbot.config import MyAiConfig
 
 import logging
 # Set up logging
