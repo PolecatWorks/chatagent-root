@@ -10,17 +10,20 @@ from langchain_core.messages import (
 )
 
 
-from pydantic import BaseModel
-from typing import Union
+from pydantic import BaseModel, Field
+from typing import Union, Annotated
 
 
-# Define the union of allowed message types
-MessageType = Union[
-    ToolMessage,
-    FunctionMessage,
-    AIMessage,
-    HumanMessage,
-    SystemMessage,
+# Define the union of allowed message types with a discriminator for efficiency and correctness
+MessageType = Annotated[
+    Union[
+        ToolMessage,
+        FunctionMessage,
+        AIMessage,
+        HumanMessage,
+        SystemMessage,
+    ],
+    Field(discriminator='type')
 ]
 
 
