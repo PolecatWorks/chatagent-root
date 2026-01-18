@@ -1,4 +1,4 @@
-name: Agents Playground Release
+name: M365 Agents Playground Release
 
 on:
   push:
@@ -6,13 +6,13 @@ on:
       - "*.*.*"
     paths:
       - "m365agentsplayground-container/**"
-      - ".github/workflows/agentsplayground-docker-publish.yml"
-      - ".github/workflows/agentsplayground-release.yml"
+      - ".github/workflows/m365agentsplayground-docker-publish.yml"
+      - ".github/workflows/m365agentsplayground-release.yml"
 
 env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}-agentsplayground
+  IMAGE_NAME: ${{ github.repository }}-m365agentsplayground
 
 jobs:
   release:
@@ -29,7 +29,7 @@ jobs:
       - name: Prepare environment
         run: |
           repo_name="${{ github.repository }}"
-          echo "IMAGE_NAME_LOWERCASE=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')-agentsplayground" >> $GITHUB_ENV
+          echo "IMAGE_NAME_LOWERCASE=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')-m365agentsplayground" >> $GITHUB_ENV
 
       - name: Log into registry ${{ env.REGISTRY }}
         uses: docker/login-action@v3

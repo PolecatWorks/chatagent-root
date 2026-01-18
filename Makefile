@@ -16,7 +16,7 @@ mcp_CMD=mcp
 chatagent_PORT=8000
 mcp_PORT=8180
 
-agentsplayground_PORT=56150
+m365agentsplayground_PORT=56150
 
 chatagent_HEALTH_PORT=8079
 mcp_HEALTH_PORT=8179
@@ -139,19 +139,19 @@ m365agentsplayground-env/node_modules/.bin/agentsplayground:
 	cd m365agentsplayground-env && npm install @microsoft/m365agentsplayground
 
 
-agentsplayground-dev: m365agentsplayground-env/node_modules/.bin/agentsplayground
+m365agentsplayground-dev: m365agentsplayground-env/node_modules/.bin/agentsplayground
 	m365agentsplayground-env/node_modules/.bin/agentsplayground -e "http://localhost:${chatagent_PORT}/api/messages" -c "emulator"
 
 
-agentsplayground-docker:
-	$(DOCKER) build m365agentsplayground-container -t agentsplayground
+m365agentsplayground-docker:
+	$(DOCKER) build m365agentsplayground-container -t m365agentsplayground
 
-agentsplayground-docker-run: agentsplayground-docker
+m365agentsplayground-docker-run: m365agentsplayground-docker
 	$(DOCKER) run -it --rm \
-		--name agentsplayground \
-		-p ${agentsplayground_PORT}:56150 \
+		--name m365agentsplayground \
+		-p ${m365agentsplayground_PORT}:56150 \
 		--add-host=host.docker.internal:host-gateway \
-		agentsplayground \
+		m365agentsplayground \
 		-p 56150 -e "http://host.docker.internal:${chatagent_PORT}/api/messages" -c "emulator"
 
 # 		--add-host=host.docker.internal:host-gateway \
