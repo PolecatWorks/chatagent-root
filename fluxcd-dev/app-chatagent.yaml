@@ -1,18 +1,24 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: chatagent
+spec:
+  interval: 10m
+  url: oci://ghcr.io/polecatworks/chatagent-root/helm/chatagent
+  ref:
+    semver: ">= 0.1.x-0"
+    semverFilter: .*-main
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: chatagent-app
+  name: chatagent
 spec:
-  releaseName: chatagent-app
-  chart:
-    spec:
-      chart: helm-charts/chatagent
-      version: 0.2.0
-      sourceRef:
-        kind: HelmRepository
-        namespace: flux-system
-        name: polecatworks
+  releaseName: chatagent
+  chartRef:
+    kind: OCIRepository
+    name: chatagent
   interval: 50m
   install:
     remediation:
