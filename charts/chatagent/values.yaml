@@ -129,7 +129,7 @@ volumes: &volumes
               - key: TENANTID
                 path: bot/azure_bot_client/TENANTID
 
-# kubectl create secret generic chatagent  --from-file=gcp_llm_key=chatagent-container/tests/test_data/secrets/aiclient/google_api_key --from-literal=CLIENTID= --from-literal=CLIENTSECRET= --from-literal=TENANTID=
+# kubectl create secret generic chatagent  --from-file=gcp_llm_key=chatagent-container/tests/test_data/secrets/aiclient/google_api_key --from-file=CLIENTID=chatagent-container/tests/test_data/secrets/bot/azure_bot_client/CLIENTID --from-file=CLIENTSECRET=chatagent-container/tests/test_data/secrets/bot/azure_bot_client/CLIENTSECRET --from-file=TENANTID=chatagent-container/tests/test_data/secrets/bot/azure_bot_client/TENANTID
 
 volumeMounts: &volume-mount
   - name: configs

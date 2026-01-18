@@ -33,5 +33,7 @@ spec:
       - "56150"
       - "-e"
       - "http://chatagent/api/messages"
+      - --su
+      - "http://m365agentsplayground:80/_connector"
       - "-c"
       - "emulator"
