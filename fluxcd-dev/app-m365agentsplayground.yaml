@@ -1,0 +1,39 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: m365agentsplayground
+spec:
+  interval: 10m
+  url: oci://ghcr.io/polecatworks/chatagent-root/helm/m365agentsplayground
+  ref:
+    semver: ">= 0.1.x-0"
+    semverFilter: .*-main
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: m365agentsplayground
+spec:
+  releaseName: m365agentsplayground
+  chartRef:
+    kind: OCIRepository
+    name: m365agentsplayground
+  interval: 50m
+  install:
+    remediation:
+      retries: 3
+  values:
+    image:
+      repository: ghcr.io/polecatworks/chatagent-root-m365agentsplayground
+      tag: main
+      pullPolicy: Always
+    imagePullSecrets:
+      - name: dockerconfigjson-ghcr-io
+    args:
+      - "-p"
+      - "56150"
+      - "-e"
+      - "http://chatagent/api/messages"
+      - "-c"
+      - "emulator"
