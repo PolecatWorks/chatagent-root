@@ -25,7 +25,7 @@ spec:
       retries: 3
   values:
     image:
-      repository: ghcr.io/polecatworks/chatagent-root
+      repository: ghcr.io/polecatworks/chatagent-root-chatagent
       tag: main
       pullPolicy: Always
     imagePullSecrets:
