@@ -1,6 +1,6 @@
 apiVersion: v2
 name: chatagent
-description: Create an Azure Chatagent with a Python backend. This provides the APIs for MS Teams
+description: Create an Azure Chatagent with a Python backend. This provides the APIs for MS Teams.
 version: 0.2.0
 appVersion: 0.2.0
 dependencies: []
