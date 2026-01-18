@@ -1,10 +1,11 @@
 # Build a MS Teams Bot
 
+[![Helm CI](https://github.com/PolecatWorks/chatagent-root/actions/workflows/helm-publish.yaml/badge.svg)](https://github.com/PolecatWorks/chatagent-root/actions/workflows/helm-publish.yaml)
 
-[![Docker MCP](https://github.com/PolecatWorks/chatbot-root/actions/workflows/mcp-publish.yaml/badge.svg)](https://github.com/PolecatWorks/chatbot-root/actions/workflows/mcp-publish.yaml)
-[![Docker ChatBot](https://github.com/PolecatWorks/chatbot-root/actions/workflows/chatbot-publish.yaml/badge.svg)](https://github.com/PolecatWorks/chatbot-root/actions/workflows/chatbot-publish.yaml)
+[![Chatagent Docker](https://github.com/PolecatWorks/chatagent-root/actions/workflows/chatagent-docker-publish.yml/badge.svg)](https://github.com/PolecatWorks/chatagent-root/actions/workflows/chatagent-docker-publish.yml)
 
-[![Tag Docker Image on Release](https://github.com/PolecatWorks/chatbot-root/actions/workflows/chatbot-release-docker-tag.yaml/badge.svg)](https://github.com/PolecatWorks/chatbot-root/actions/workflows/chatbot-release-docker-tag.yaml)
+[![M365 Agents Playground Docker](https://github.com/PolecatWorks/chatagent-root/actions/workflows/m365agentsplayground-docker-publish.yml/badge.svg)](https://github.com/PolecatWorks/chatagent-root/actions/workflows/m365agentsplayground-docker-publish.yml)
+
 
 Create a bot for MS Teams.
 
