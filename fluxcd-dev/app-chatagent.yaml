@@ -2,12 +2,12 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: chatbot-app
+  name: chatagent-app
 spec:
-  releaseName: chatbot-app
+  releaseName: chatagent-app
   chart:
     spec:
-      chart: helm-charts/chatbot
+      chart: helm-charts/chatagent
       version: 0.2.0
       sourceRef:
         kind: HelmRepository
@@ -19,39 +19,39 @@ spec:
       retries: 3
   values:
     volumes:
-    - name: configs
-      configMap:
-        name: "{{ template \"chatbot.fullname\" . }}"
-    # - name: objects
-    #   emptyDir:
-    #     sizeLimit: 500Mi
-    - name: secrets
-      projected:
-        sources:
-          - secret:
-              # optional: true
-              name: "{{ .Values.secretName | default (include \"chatbot.fullname\" .) }}"
-              items:
-                - key: app_password
-                  path: bot/app_password
-                - key: app_id
-                  path: bot/app_id
-                - key: gcp_llm_key
-                  path: aiclient/google_api_key
+      - name: configs
+        configMap:
+          name: '{{ template "chatagent.fullname" . }}'
+      # - name: objects
+      #   emptyDir:
+      #     sizeLimit: 500Mi
+      - name: secrets
+        projected:
+          sources:
+            - secret:
+                # optional: true
+                name: '{{ .Values.secretName | default (include "chatagent.fullname" .) }}'
+                items:
+                  - key: app_password
+                    path: bot/app_password
+                  - key: app_id
+                    path: bot/app_id
+                  - key: gcp_llm_key
+                    path: aiclient/google_api_key
 
     image:
-      repository: ghcr.io/polecatworks/chatbot-root
+      repository: ghcr.io/polecatworks/chatagent-root
       tag: main
       pullPolicy: Always
     imagePullSecrets:
-    - name: dockerconfigjson-ghcr-io
+      - name: dockerconfigjson-ghcr-io
     configs:
       logging:
         version: 1
         disable_existing_loggers: False
         formatters:
           standard:
-            format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         handlers:
           console:
             class: logging.StreamHandler
@@ -59,7 +59,7 @@ spec:
             level: INFO
             stream: ext://sys.stdout
         loggers:
-          chatbot.hams:
+          chatagent.hams:
             handlers: [console]
             level: WARNING
             propagate: False
@@ -91,24 +91,24 @@ spec:
         toolbox:
           max_concurrent: 10
           tools:
-          - name: sum_numbers
-            max_instances: 10
-          - name: multiply_numbers
-            max_instances: 10
-          - name: search_records_by_name
-            max_instances: 10
-          - name: delete_record_by_id
-            max_instances: 10
-          - name: get_weather
-            max_instances: 10
-          - name: get_time
-            max_instances: 10
-          - name: count_calls
-            max_instances: 10
+            - name: sum_numbers
+              max_instances: 10
+            - name: multiply_numbers
+              max_instances: 10
+            - name: search_records_by_name
+              max_instances: 10
+            - name: delete_record_by_id
+              max_instances: 10
+            - name: get_weather
+              max_instances: 10
+            - name: get_time
+              max_instances: 10
+            - name: count_calls
+              max_instances: 10
           mcps:
-          - name: customers
-            url: http://chatbot-mcp/mcp
-            transport: sse
+            - name: customers
+              url: http://chatagent-mcp/mcp
+              transport: sse
 
       hams:
         url: http://0.0.0.0:8079
