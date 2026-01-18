@@ -6,7 +6,7 @@ on:
       - "*.*.*"
     paths:
       - "chatagent-container/**"
-      - ".github/workflows/chatbot-docker-publish.yml"
+      - ".github/workflows/chatagent-docker-publish.yml"
       - ".github/workflows/chatagent-release.yml"
 
 env:
