@@ -136,6 +136,7 @@ class Hams:
         return True
 
     def ready(self) -> bool:
+        return True
         return self.app[keys.events].spareCapacity()
 
 
