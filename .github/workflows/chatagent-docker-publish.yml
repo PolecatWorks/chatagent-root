@@ -25,20 +25,20 @@ jobs:
   check-paths:
     runs-on: ubuntu-latest
     outputs:
-      chatbot: ${{ steps.filter.outputs.chatbot }}
+      chatagent: ${{ steps.filter.outputs.chatagent }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
-            chatbot:
+            chatagent:
               - 'chatagent-container/**'
-              - '.github/workflows/chatbot-docker-publish.yml'
+              - '.github/workflows/chatagent-docker-publish.yml'
 
   build:
     needs: check-paths
-    if: needs.check-paths.outputs.chatbot == 'true'
+    if: needs.check-paths.outputs.chatagent == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -214,7 +214,7 @@ jobs:
     steps:
       - name: Check Status
         run: |
-          if [[ "${{ needs.check-paths.outputs.chatbot }}" == 'true' ]]; then
+          if [[ "${{ needs.check-paths.outputs.chatagent }}" == 'true' ]]; then
             if [[ "${{ needs.merge.result }}" != 'success' ]]; then
                echo "Build/Merge failed!"
                exit 1
