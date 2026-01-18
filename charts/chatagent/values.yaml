@@ -1,6 +1,5 @@
 env: {}
 
-
 replicaCount: 1
 
 lifecycle:
@@ -71,7 +70,6 @@ service:
   #     timeoutSeconds: 10800
   # sessionAffinityConfig: {} # Ensure this is effectively removed or commented
 
-
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -97,23 +95,21 @@ tolerations: []
 
 affinity: {}
 
-
-configs: {}  # Note: Defaults provided in helm configs dir
-
+configs: {} # Note: Defaults provided in helm configs dir
 
 args:
-- start
-- --config
-- /opt/app/configs/config.yaml
-- --secrets
-- /opt/app/secrets
+  - start
+  - --config
+  - /opt/app/configs/config.yaml
+  - --secrets
+  - /opt/app/secrets
 
 secretName: null
 
 volumes: &volumes
   - name: configs
     configMap:
-      name: "{{ template \"chatagent.fullname\" . }}"
+      name: '{{ template "chatagent.fullname" . }}'
   # - name: objects
   #   emptyDir:
   #     sizeLimit: 500Mi
@@ -122,15 +118,18 @@ volumes: &volumes
       sources:
         - secret:
             # optional: true
-            name: "{{ .Values.secretName | default (include \"chatagent.fullname\" .) }}"
+            name: '{{ .Values.secretName | default (include "chatagent.fullname" .) }}'
             items:
-              - key: app_password
-                path: bot/app_password
-              - key: app_id
-                path: bot/app_id
               - key: gcp_llm_key
                 path: aiclient/google_api_key
+              - key: CLIENTID
+                path: bot/azure_bot_client/CLIENTID
+              - key: CLIENTSECRET
+                path: bot/azure_bot_client/CLIENTSECRET
+              - key: TENANTID
+                path: bot/azure_bot_client/TENANTID
 
+# kubectl create secret generic chatagent  --from-file=gcp_llm_key=chatagent-container/tests/test_data/secrets/aiclient/google_api_key --from-literal=CLIENTID= --from-literal=CLIENTSECRET= --from-literal=TENANTID=
 
 volumeMounts: &volume-mount
   - name: configs
@@ -140,8 +139,6 @@ volumeMounts: &volume-mount
   #   mountPath: /opt/app/objects
   - name: secrets
     mountPath: /opt/app/secrets
-
-
 
 # virtualservice:
 #   targetService: dynamic-lists
@@ -156,8 +153,6 @@ devsecops:
     jwtRules: []
   AuthorizationPolicy:
     rules: []
-
-
 # schema:
 #   command:
 #   - /usr/local/bin/k8s-python

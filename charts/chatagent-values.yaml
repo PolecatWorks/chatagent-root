@@ -1,6 +1,6 @@
 ---
 image:
-  repository: ghcr.io/polecatworks/chatbot-root
+  repository: ghcr.io/polecatworks/chatagent-root-chatagent
   tag: main
   pullPolicy: Always
 
