@@ -5,18 +5,20 @@ metadata:
   name: chatbot
 spec:
   hosts:
-  - chatbot.k8s
+    - chatbot.k8s
   gateways:
-  - istio-ingress/k8s-gateway
-  - mesh # applies to all the sidecars in the mesh
+    - istio-ingress/k8s-gateway
+    - mesh # applies to all the sidecars in the mesh
   http:
-  - name: chatbot
-    match:
-      - uri:
-          prefix: /api/messages
-    route:
-    - destination:
-        host: chatbot-app
+    - name: m365agentsplayground
+      match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: m365agentsplayground-m365agentsplayground
+            port:
+              number: 56150
   # - name: ham4log-fe
   #   # Default for all traffic that does not match an API path (above)
   #   route:
