@@ -66,7 +66,7 @@ def parse(ctx, config, secrets):
     """Parse a config"""
     from pydantic_yaml import to_yaml_str
 
-    configObj: ServiceConfig = ServiceConfig.from_yaml(config.name, secrets)
+    configObj: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config.name, secrets)
     click.echo(configObj)
 
     click.echo(to_yaml_str(configObj))
@@ -78,7 +78,7 @@ def start(ctx, config, secrets):
     """Start the service"""
     from chatbot import app_start
 
-    configObj: ServiceConfig = ServiceConfig.from_yaml(config.name, secrets)
+    configObj: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config.name, secrets)
 
     # Load logging configuration from YAML file
     logging.config.dictConfig(configObj.logging)

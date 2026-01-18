@@ -1,16 +1,21 @@
 from .tool import ToolBoxConfig, ToolConfig
 from chatbot.hams.config import HamsConfig
 from pydantic import ConfigDict, Field, BaseModel, SecretStr, field_validator, HttpUrl
-from pydantic_settings import BaseSettings, YamlConfigSettingsSource
-from pydantic_file_secrets import FileSecretsSettingsSource
 from pathlib import Path
 from typing import (
     Any,
     Self,
+    Type,
+    Tuple,
     Literal,
 )  # TODO: Review Self and Literal for Python version compatibility
 from datetime import timedelta
-
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    YamlConfigSettingsSource,
+    NestedSecretsSettingsSource,
+)
 
 import os
 
@@ -196,23 +201,34 @@ class ServiceConfig(BaseSettings):
     }
 
     @classmethod
-    def from_yaml(cls, config_path: Path, secrets_path: Path) -> Self:
-        return cls(
-            **YamlConfigSettingsSource(cls, config_path)(), _secrets_dir=secrets_path
-        )
+    def from_yaml_and_secrets_dir(cls, yaml_file: Path, secrets_path: Path) -> Self:
+
+        cls.model_config["yaml_file"] = yaml_file
+        cls.model_config["secrets_dir"] = secrets_path
+
+        return cls()
+
 
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls,
-        init_settings,
-        env_settings,
-        dotenv_settings,
-        file_secret_settings,
-    ):
+        settings_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+
+        # Explicitly create NestedSecretsSettingsSource with NO prefix
+        # so it maps filenames like 'api_key' and 'db/password' directly.
+        nested_secrets = NestedSecretsSettingsSource(
+            file_secret_settings,
+            env_prefix=""
+        )
+
         return (
             init_settings,
             env_settings,
-            dotenv_settings,
-            FileSecretsSettingsSource(file_secret_settings),
+            YamlConfigSettingsSource(settings_cls),
+            nested_secrets,
         )

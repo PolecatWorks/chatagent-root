@@ -33,8 +33,8 @@ RUN pip3 install .
 FROM build AS test
 RUN pip3 install poetry
 RUN poetry install --with dev
-COPY pyproject.toml poetry.lock ./
 COPY tests ./tests
+COPY pyproject.toml poetry.lock ./
 RUN poetry run pytest tests/ && touch /app/tests/.test_success
 
 FROM base AS publish
