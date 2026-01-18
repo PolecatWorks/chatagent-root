@@ -15,6 +15,7 @@ from pydantic_settings import (
     PydanticBaseSettingsSource,
     YamlConfigSettingsSource,
     NestedSecretsSettingsSource,
+    SettingsConfigDict,
 )
 
 import os
@@ -195,10 +196,11 @@ class ServiceConfig(BaseSettings):
     hams: HamsConfig = Field(description="Health and monitoring configuration")
     events: EventConfig = Field(description="Process costs for events")
 
-    model_config = {
-        # "env_prefix": "SERVICE_",
-        "secrets_nested_subdir": True  # Prevents additional fields not defined in the model
-    }
+    model_config = SettingsConfigDict(
+        env_prefix="APP_",
+        secrets_nested_subdir=True  # Prevents additional fields not defined in the model
+        env_nested_delimiter="__"
+    )
 
     @classmethod
     def from_yaml_and_secrets_dir(cls, yaml_file: Path, secrets_path: Path) -> Self:

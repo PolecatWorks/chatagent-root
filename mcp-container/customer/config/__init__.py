@@ -160,29 +160,41 @@ class ServiceConfig(BaseSettings):
     hams: HamsConfig = Field(description="Health and monitoring configuration")
     events: EventConfig = Field(description="Process costs for events")
 
-    model_config = {
-        # secrets_dir='/run/secrets',
-        "secrets_nested_subdir": True,
-    }
+    model_config = SettingsConfigDict(
+        env_prefix="APP_",
+        secrets_nested_subdir=True  # Prevents additional fields not defined in the model
+        env_nested_delimiter="__"
+    )
 
     @classmethod
-    def from_yaml(cls, config_path: Path, secrets_path: Path) -> Self:
-        return cls(
-            **YamlConfigSettingsSource(cls, config_path)(), _secrets_dir=secrets_path
-        )
+    def from_yaml_and_secrets_dir(cls, yaml_file: Path, secrets_path: Path) -> Self:
+
+        cls.model_config["yaml_file"] = yaml_file
+        cls.model_config["secrets_dir"] = secrets_path
+
+        return cls()
+
 
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls,
-        init_settings,
-        env_settings,
-        dotenv_settings,
-        file_secret_settings,
-    ):
+        settings_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+
+        # Explicitly create NestedSecretsSettingsSource with NO prefix
+        # so it maps filenames like 'api_key' and 'db/password' directly.
+        nested_secrets = NestedSecretsSettingsSource(
+            file_secret_settings,
+            env_prefix=""
+        )
+
         return (
             init_settings,
             env_settings,
-            dotenv_settings,
-            FileSecretsSettingsSource(file_secret_settings),
+            YamlConfigSettingsSource(settings_cls),
+            nested_secrets,
         )
