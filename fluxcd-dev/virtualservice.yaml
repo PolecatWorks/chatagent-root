@@ -16,7 +16,7 @@ spec:
             prefix: /
       route:
         - destination:
-            host: m365agentsplayground-m365agentsplayground
+            host: m365agentsplayground
   # - name: ham4log-fe
   #   # Default for all traffic that does not match an API path (above)
   #   route:
