@@ -24,8 +24,8 @@ image:
   tag: main
   pullPolicy: Always
 
-imagePullSecrets:
-  - name: dockerconfigjson-ghcr-io
+# imagePullSecrets:
+#   - name: dockerconfigjson-ghcr-io
 
 nameOverride: ""
 fullnameOverride: ""
