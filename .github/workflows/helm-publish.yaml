@@ -43,6 +43,9 @@ jobs:
       - name: Lint chatagent
         run: helm lint charts/chatagent
 
+      - name: Lint m365agentsplayground
+        run: helm lint charts/m365agentsplayground
+
   publish:
     needs: check-paths
     if: needs.check-paths.outputs.charts == 'true'
@@ -77,10 +80,24 @@ jobs:
           echo "Updated Chatagent Version:"
           grep "^version:" charts/chatagent/Chart.yaml
 
+          sed -i "s/^version: .*/&${suffix}/" charts/m365agentsplayground/Chart.yaml
+          echo "Updated M365 Agents Playground Version:"
+          grep "^version:" charts/m365agentsplayground/Chart.yaml
+
       - name: Push Helm chart to OCI for chatagent
         uses: bsord/helm-push@v4
         with:
           chart-folder: charts/chatagent
+          useOCIRegistry: true
+          registry-url: oci://ghcr.io/${{ steps.lower-repo.outputs.repository }}/helm
+          username: ${{ github.actor }}
+          access-token: ${{ secrets.GITHUB_TOKEN }}
+          force: true
+
+      - name: Push Helm chart to OCI for m365agentsplayground
+        uses: bsord/helm-push@v4
+        with:
+          chart-folder: charts/m365agentsplayground
           useOCIRegistry: true
           registry-url: oci://ghcr.io/${{ steps.lower-repo.outputs.repository }}/helm
           username: ${{ github.actor }}
