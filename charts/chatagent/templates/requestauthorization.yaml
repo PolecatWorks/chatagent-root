@@ -1,0 +1,17 @@
+{{- if .Values.devsecops.RequestAuthentication.jwtRules }}
+---
+apiVersion: "security.istio.io/v1beta1"
+kind: RequestAuthentication
+metadata:
+  name: {{ include "chatagent.fullname" . }}
+  labels:
+    {{- include "chatagent.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "chatagent.selectorLabels" . | nindent 6 }}
+  #   peers:
+  #   - mtls: {}
+  jwtRules:
+  {{-  tpl (toYaml .Values.devsecops.RequestAuthentication.jwtRules) . | nindent 4 }}
+{{- end }}
