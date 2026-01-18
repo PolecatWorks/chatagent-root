@@ -28,7 +28,7 @@ def server():
         "TEST_SECRETS_DIR", default_secrets
     )
 
-    config: ServiceConfig = ServiceConfig.from_yaml(config_filename, secrets_dir)
+    config: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config_filename, secrets_dir)
 
     app = web.Application()
 

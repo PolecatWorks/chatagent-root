@@ -23,7 +23,7 @@ def config() -> ServiceConfig:
         "TEST_SECRETS_DIR", "tests/test_data/secrets"
     )
 
-    config: ServiceConfig = ServiceConfig.from_yaml(config_filename, secrets_dir)
+    config: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config_filename, secrets_dir)
 
     return config
 
@@ -70,7 +70,7 @@ def llm_app(enable_livellm):
             "TEST_SECRETS_DIR", "tests/test_data/secrets"
         )
 
-        config: ServiceConfig = ServiceConfig.from_yaml(config_filename, secrets_dir)
+        config: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config_filename, secrets_dir)
 
         config_app_create(app, config)
         metrics_app_create(app)
