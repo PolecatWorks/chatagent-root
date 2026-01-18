@@ -1,0 +1,6 @@
+apiVersion: v2
+name: m365agentsplayground
+description: A Helm chart for Microsoft 365 Agents Playground
+version: 0.1.0
+appVersion: 0.1.0
+dependencies: []

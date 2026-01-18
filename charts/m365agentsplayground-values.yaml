@@ -1,0 +1,16 @@
+---
+image:
+  repository: ghcr.io/polecatworks/chatagent-root-m365agentsplayground
+  tag: main
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: dockerconfigjson-ghcr-io
+
+args:
+  - "-p"
+  - "56150"
+  - "-e"
+  - "http://chatagent/api/messages"
+  - "-c"
+  - "emulator"
