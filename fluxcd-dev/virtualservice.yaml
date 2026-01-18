@@ -2,10 +2,10 @@
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: chatbot
+  name: chatagent
 spec:
   hosts:
-    - chatbot.k8s
+    - chatagent.k8s
   gateways:
     - istio-ingress/k8s-gateway
     - mesh # applies to all the sidecars in the mesh
@@ -17,8 +17,6 @@ spec:
       route:
         - destination:
             host: m365agentsplayground-m365agentsplayground
-            port:
-              number: 56150
   # - name: ham4log-fe
   #   # Default for all traffic that does not match an API path (above)
   #   route:
