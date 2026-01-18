@@ -90,10 +90,10 @@ spec:
               max_instances: 10
             - name: count_calls
               max_instances: 10
-          mcps:
-            - name: customers
-              url: http://chatagent-mcp/mcp
-              transport: sse
+          mcps: []
+            # - name: customers
+            #   url: http://chatagent-mcp/mcp
+            #   transport: sse
 
       hams:
         url: http://0.0.0.0:8079
