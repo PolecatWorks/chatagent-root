@@ -2,11 +2,6 @@ from dataclasses import dataclass, field
 import logging
 
 from customer.config import ServiceConfig
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from customer import keys
-from langchain_core.tools.structured import StructuredTool
-from langchain_core.documents.base import Blob
-from langchain_core.messages import AIMessage, HumanMessage
 
 logger = logging.getLogger(__name__)
 

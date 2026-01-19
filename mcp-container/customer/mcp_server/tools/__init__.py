@@ -1,14 +1,12 @@
 import datetime
 from zoneinfo import ZoneInfo
 
-from aiohttp_mcp import AiohttpMCP, setup_mcp_subapp
 
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-mcp = AiohttpMCP(debug=False)
 
 myCount = 0
 

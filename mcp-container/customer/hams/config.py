@@ -1,6 +1,5 @@
 import asyncio
 from datetime import timedelta
-import aiohttp
 import logging
 from pydantic import Field, BaseModel
 from pydantic import HttpUrl
@@ -57,13 +56,13 @@ class HttpCheck(HamsCheck):
     async def run_check(self) -> bool:
         logger.debug(f"HttpCheck[{self.name}]: {self.http} == {self.returncode}")
 
-        async with aiohttp.ClientSession() as session:
-            if self.method == HttpMethodEnum.get:
-                async with session.get(str(self.http)) as response:
-                    return response.status == self.returncode
-            elif self.method == HttpMethodEnum.post:
-                async with session.post(str(self.http)) as response:
-                    return response.status == self.returncode
+        # async with aiohttp.ClientSession() as session:
+        #     if self.method == HttpMethodEnum.get:
+        #         async with session.get(str(self.http)) as response:
+        #             return response.status == self.returncode
+        #     elif self.method == HttpMethodEnum.post:
+        #         async with session.post(str(self.http)) as response:
+        #             return response.status == self.returncode
 
 
 CheckType = HttpCheck # Replaced Union[HttpCheck] with HttpCheck as it's the only type

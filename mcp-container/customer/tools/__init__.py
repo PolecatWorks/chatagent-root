@@ -1,7 +1,6 @@
 # Contains tools to be used by the LLM
 # These include MCP provisioned tools AND local tools
 
-from aiohttp import web
 from customer.config import ServiceConfig
 
 from .mcp import connect_to_mcp_server
