@@ -25,6 +25,9 @@ logging:
 webservice:
   url: http://0.0.0.0:8080
   prefix: /mcp
+mcp:
+  name: mcp-server
+  instructions: "You are a helpful assistant."
 # hams:
 #   url: http://0.0.0.0:8079
 #   prefix: hams

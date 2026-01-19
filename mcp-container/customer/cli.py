@@ -3,6 +3,7 @@
 # Customer Copyright (C) 2024 Ben Greene
 """CLI initiated python app"""
 
+import uvicorn
 import click
 import sys
 import logging
@@ -75,7 +76,7 @@ def parse(ctx, config, secrets):
 @shared_options
 def start(ctx, config, secrets):
     """Start the customer definition"""
-    from customer import app_start
+    from customer import app_init
 
     configObj: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config.name, secrets)
 
@@ -85,7 +86,16 @@ def start(ctx, config, secrets):
     logger = logging.getLogger(__name__)
     # print(to_yaml_str(configObj, indent=2))
 
-    app_start(configObj)
+    app = app_init(configObj)
+
+    if configObj.webservice.url.host is None:
+        raise ValueError("Host is required to be configured")
+
+    if configObj.webservice.url.port is None:
+        raise ValueError("Port is required to be configured")
+
+
+    uvicorn.run(app, host=configObj.webservice.url.host, port=configObj.webservice.url.port)
 
 
 # ------------- CLI commands above here -------------
