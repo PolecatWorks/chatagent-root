@@ -1,3 +1,4 @@
+from customer.hams import HamsConfig
 from customer.mcp_server import MCPConfig
 from pydantic import Field, BaseModel
 from pydantic import HttpUrl
@@ -13,9 +14,11 @@ from pydantic_settings import (
     PydanticBaseSettingsSource,
     NestedSecretsSettingsSource,
 )
-
-
 import os
+
+
+
+
 
 
 # TODO: Look here in future: https://github.com/pydantic/pydantic/discussions/2928#discussioncomment-4744841
@@ -35,10 +38,9 @@ class ServiceConfig(BaseSettings):
     """
 
     logging: dict[str, Any] = Field(description="Logging configuration")
-
     webservice: WebServerConfig = Field(description="Web server configuration")
-
     mcp: MCPConfig = Field(description="MCP configuration")
+    hams: HamsConfig = Field(description="Hams configuration")
 
     model_config = SettingsConfigDict(
         env_prefix="APP_",

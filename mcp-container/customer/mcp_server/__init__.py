@@ -10,7 +10,6 @@ class MCPConfig(BaseModel):
     """
     Configuration of the MCP server
     """
-
     name: str
     instructions: str
 

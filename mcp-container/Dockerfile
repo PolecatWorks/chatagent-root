@@ -38,8 +38,8 @@ COPY tests ./tests
 RUN poetry run pytest tests/ && touch /app/tests/.test_success
 
 FROM base AS publish
-LABEL org.opencontainers.image.title="Aiohttp MCP"
-LABEL org.opencontainers.image.description="Aiohttp based MCB service"
+LABEL org.opencontainers.image.title="FastMCP Customer Example"
+LABEL org.opencontainers.image.description="FastMCP based Customer Example"
 LABEL org.opencontainers.image.authors="Ben Greene <BenJGreene@gmail.com>"
 LABEL org.opencontainers.image.source="https://github.com/polecatworks/chatbot_root"
 LABEL org.opencontainers.image.created="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
