@@ -1,14 +1,15 @@
 import os
+from fastmcp import Client
 from aiohttp import web
-# from customer import config_app_create, metrics_app_create
-# from customer.service import service_app_create
 from customer import app_init
+from customer.mcp_server import mcp_init
 from customer.config import ServiceConfig
 import pytest
 
 from mcp.client.stdio import stdio_client
 from mcp import ClientSession, StdioServerParameters, types
-
+from fastmcp.utilities.tests import run_server_async
+from fastmcp.client.transports import StreamableHttpTransport
 
 
 def create_app():
@@ -29,6 +30,22 @@ async def test_hello(aiohttp_client):
     assert "Hello, world" in text
 
 
+@pytest.fixture
+def mcp_app():
+    config_filename = "tests/test_data/config.yaml"
+    secrets_dir =  "tests/test_data/secrets"
+
+    config: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config_filename, secrets_dir)
+
+    mcp_app = mcp_init(config.mcp)
+
+    return mcp_app
+
+
+@pytest.fixture
+async def mcp_server(mcp_app):
+    async with run_server_async(mcp_app) as url:
+        yield url
 
 
 @pytest.fixture
@@ -45,26 +62,24 @@ def service_app():
     return app
 
 
-@pytest.fixture
-async def service_client(aiohttp_client, service_app):
-    client = await aiohttp_client(service_app)
-    return client
+async def test_mcp_app(mcp_app):
+    assert mcp_app is not None
+
+    async with Client(mcp_app) as client:
+        result = await client.call_tool("hello", {})
+        assert len(result.content) > 0
+        assert result.content[0].text == "hello"
 
 
-# async def test_chunks_post_valid(service_client):
-#     # Test POST with valid data
-#     payload = {"name": "example", "num_chunks": 3}
-#     resp = await service_client.post("/mcp", json=payload)
-#     print(f"body = {await resp.text()}")
-#     assert resp.status == 200
-#     data = await resp.json()
-#     assert data["name"] == "example"
-#     assert data["num_chunks"] == 3
+async def test_http_transport(mcp_server: str):
+    """Test actual HTTP transport behavior."""
+    async with Client(
+        transport=StreamableHttpTransport(mcp_server)
+    ) as client:
+        result = await client.ping()
+        assert result is True
 
-# async def test_mcp_api(service_client):
+        result = await client.call_tool("hello", {})
 
-#     async with stdio_client(server_params) as (read, write):
-#         async with ClientSession(read, write, sampling_callback=handle_sampling_message) as session:
-#             # Initialize the connection
-#             await session.initialize()
-#             prompts = await session.list_prompts()
+        assert len(result.content) > 0
+        assert result.content[0].text == "hello"

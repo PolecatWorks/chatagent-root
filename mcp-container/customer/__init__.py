@@ -1,3 +1,4 @@
+from customer.mcp_server import mcp_init
 from fastmcp.server.http import create_sse_app
 import astroid.brain.brain_scipy_signal
 from contextlib import asynccontextmanager
@@ -9,11 +10,17 @@ from .tools import tools_app_create
 from fastmcp import FastMCP
 from starlette.applications import Starlette
 from starlette.routing import Mount
-from  random import randint
-import yaml
 
+import yaml
+from .middleware.config import ConfigMiddleware
 
 logger = logging.getLogger(__name__)
+
+
+
+
+
+
 
 
 
@@ -24,26 +31,10 @@ def app_init(config: ServiceConfig):
 
     logger.info(f"CONFIG\n{(yaml.dump(config.model_dump(), sort_keys=False))}")
 
+    fastmcp_app = mcp_init(config.mcp)
 
-    fastmcp_app = FastMCP(
-        name="Access to reconciliation records to confirm status of bills and payments",
-        instructions="Get the list of all active billing and payments records and confirm the status of specific records"
-    )
-
-    @fastmcp_app.tool(description="return a random number")
-    def random_number():
-        return randint(1, 100)
-
-
-    # app = Starlette(
-    #     routes=[
-    #         Mount("/mcp-server", app=mcp_app),
-    #         # Add other routes as needed
-    #     ],
-    #     lifespan=mcp_app.lifespan,
-    # )
-
-    # uvicorn.run(app, host="0.0.0.0", port=8000)
+    config_middleware = ConfigMiddleware(config)
+    fastmcp_app.add_middleware(config_middleware)
 
 
     @asynccontextmanager
@@ -56,15 +47,19 @@ def app_init(config: ServiceConfig):
     fastmcp_app_sse = create_sse_app(fastmcp_app, "/messages", "/mcp")
 
 
+    import pdb
     @asynccontextmanager
     async def combined_lifespan(app: FastAPI):
 
         async with app_lifespace(app):
             print(f"App lifespan started {app}")
+            # pdb.set_trace()
             async with fastmcp_app_http.lifespan(app):
                 print(f"FastMCP lifespan started {app}")
+                # pdb.set_trace()
                 async with fastmcp_app_sse.lifespan(app):
                     print(f"SSE lifespan started {app}")
+                    # pdb.set_trace()
                     yield
                     print(f"SSE lifespan ended {app}")
                 print(f"FastMCP lifespan ended {app}")

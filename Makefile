@@ -11,6 +11,7 @@ UVICORN=${BASE_DIR}mcp-venv/bin/uvicorn
 
 aiohttp_apps:=chatagent
 
+PDB = --pdb
 
 chatagent_CMD=chatagent
 chatagent_PORT=8000
@@ -18,7 +19,8 @@ chatagent_HEALTH_PORT=8079
 
 m365agentsplayground_PORT=56150
 
-mcp_CMD=mcp
+mcp_CMD=customer
+mcp_HOST=0.0.0.0
 mcp_PORT=8180
 mcp_HEALTH_PORT=8179
 
@@ -63,6 +65,7 @@ $(foreach app,$(aiohttp_apps),$(app)-venv/bin/adev):%-venv/bin/adev: %-venv/bin/
 
 $(foreach app,$(aiohttp_apps) mcp,$(app)-run):%-run: %-venv/bin/activate
 	cd $*-container && \
+	APP_WEBSERVICE__URL="http://${$*_HOST}:${$*_PORT}" \
 	${BASE_DIR}$*-venv/bin/${$*_CMD} start --secrets tests/test_data/secrets --config tests/test_data/config.yaml
 
 
@@ -79,22 +82,17 @@ $(foreach app,mcp,$(app)-venv/bin/uvicorn):%-venv/bin/uvicorn: %-venv/bin/activa
 
 $(foreach app,mcp,$(app)-dev):%-dev:%-venv/bin/uvicorn
 	cd $*-container && \
-	${UVICORN} dev:app --port $($*_PORT) --reload --reload-exclude "tests/*" --reload-include "customer/*"
+	${UVICORN} dev:app --port $($*_PORT) --reload --reload-exclude "tests/*" --reload-include "customer/**"
 
 
 
-# # a2a-dev:%-dev: %-venv/bin/fastapi
-# # 	cd $*-container && \
-# # 	fastapi dev -e app:create_app --port ${$*_PORT}
-
-
-$(foreach app,$(aiohttp_apps),$(app)-test):%-test: %-venv/bin/pytest
+$(foreach app,$(aiohttp_apps) mcp,$(app)-test):%-test: %-venv/bin/pytest
 	cd $*-container && \
 	${BASE_DIR}$*-venv/bin/pytest -v
 
-$(foreach app,$(aiohttp_apps),$(app)-ptw):%-ptw: %-venv/bin/pytest
+$(foreach app,$(aiohttp_apps) mcp,$(app)-ptw):%-ptw: %-venv/bin/pytest
 	cd $*-container && \
-	${BASE_DIR}$*-venv/bin/ptw --runner ${BASE_DIR}$*-venv/bin/pytest --pdb . -- --enable-livellm
+	${BASE_DIR}$*-venv/bin/ptw --runner ${BASE_DIR}$*-venv/bin/pytest ${PDB} . -- --enable-livellm
 
 $(foreach app,$(aiohttp_apps),$(app)-docker):%-docker:
 	$(DOCKER) build $*-container -t $* -f $*-container/Dockerfile

@@ -1,3 +1,4 @@
+from customer.mcp_server import MCPConfig
 from pydantic import Field, BaseModel
 from pydantic import HttpUrl
 from pathlib import Path
@@ -36,6 +37,8 @@ class ServiceConfig(BaseSettings):
     logging: dict[str, Any] = Field(description="Logging configuration")
 
     webservice: WebServerConfig = Field(description="Web server configuration")
+
+    mcp: MCPConfig = Field(description="MCP configuration")
 
     model_config = SettingsConfigDict(
         env_prefix="APP_",

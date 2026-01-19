@@ -1,27 +1,35 @@
-# Provides the tools and resources that are available to the MCP server
 
 
-from customer.config import ServiceConfig
+from fastmcp import FastMCP
+from pydantic import BaseModel
 
-from customer import keys
-
-import logging
-
-# Set up logging
-logger = logging.getLogger(__name__)
+from  random import randint
 
 
-from .tools import mcp
-
-
-def mcp_server_app_create(app: web.Application, config: ServiceConfig) -> web.Application:
+class MCPConfig(BaseModel):
     """
-    Create the service with the given configuration file
+    Configuration of the MCP server
     """
 
-    app[keys.mcp] = mcp
-    setup_mcp_subapp(app, app[keys.mcp], prefix="/mcp")
+    name: str
+    instructions: str
 
-    logger.info(f"MCP: Initialised at /mcp")
 
-    return app
+def mcp_init(config: MCPConfig):
+    fastmcp_app = FastMCP(
+        name=config.name,
+        instructions=config.instructions
+    )
+
+
+
+    @fastmcp_app.tool(description="say hello")
+    def hello():
+        return "hello"
+
+    @fastmcp_app.tool(description="return a random number")
+    def random_number():
+        return randint(1, 100)
+
+
+    return fastmcp_app
