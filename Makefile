@@ -7,18 +7,19 @@ DOCKER=docker
 
 BASE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
+UVICORN=${BASE_DIR}mcp-venv/bin/uvicorn
 
 aiohttp_apps:=chatagent
 
-chatagent_CMD=chatagent
-mcp_CMD=mcp
 
+chatagent_CMD=chatagent
 chatagent_PORT=8000
-mcp_PORT=8180
+chatagent_HEALTH_PORT=8079
 
 m365agentsplayground_PORT=56150
 
-chatagent_HEALTH_PORT=8079
+mcp_CMD=mcp
+mcp_PORT=8180
 mcp_HEALTH_PORT=8179
 
 a2a_PORT=8280
@@ -35,7 +36,7 @@ status:
 	@echo "Aiohhtp apps are: $(aiohttp_apps)"
 
 
-$(foreach app,$(aiohttp_apps),$(app)-venv/bin/activate):%-venv/bin/activate:%-container/pyproject.toml
+$(foreach app,$(aiohttp_apps) mcp,$(app)-venv/bin/activate):%-venv/bin/activate:%-container/pyproject.toml
 	@echo Creating venv for $*
 	python3 -m venv $*-venv
 	$*-venv/bin/pip install --upgrade pip
@@ -50,7 +51,7 @@ $(foreach app,$(aiohttp_apps),$(app)-venv/bin/activate):%-venv/bin/activate:%-co
 
 # $(foreach app,$(aiohttp_apps),$(app)-venv/bin/pytest): %-venv/bin/pytest:%-venv/bin/activate
 
-$(foreach app,$(aiohttp_apps),$(app)-venv/bin/pytest): %-venv/bin/pytest: %-venv/bin/adev
+$(foreach app,$(aiohttp_apps) mcp,$(app)-venv/bin/pytest): %-venv/bin/pytest: %-venv/bin/adev
 	@touch $@
 
 
@@ -60,7 +61,7 @@ $(foreach app,$(aiohttp_apps),$(app)-venv/bin/adev):%-venv/bin/adev: %-venv/bin/
 	@touch $@
 
 
-$(foreach app,$(aiohttp_apps),$(app)-run):%-run: %-venv/bin/activate
+$(foreach app,$(aiohttp_apps) mcp,$(app)-run):%-run: %-venv/bin/activate
 	cd $*-container && \
 	${BASE_DIR}$*-venv/bin/${$*_CMD} start --secrets tests/test_data/secrets --config tests/test_data/config.yaml
 
@@ -68,6 +69,18 @@ $(foreach app,$(aiohttp_apps),$(app)-run):%-run: %-venv/bin/activate
 $(foreach app,$(aiohttp_apps),$(app)-dev):%-dev:%-venv/bin/adev
 	cd $*-container && \
 	${BASE_DIR}$*-venv/bin/adev runserver --port ${$*_PORT}
+
+
+$(foreach app,mcp,$(app)-venv/bin/uvicorn):%-venv/bin/uvicorn: %-venv/bin/activate
+	@echo creating development tools for $*
+	@source $*-venv/bin/activate && cd $*-container && poetry install --with dev && pip install -e .[dev] && deactivate && cd ..
+	@touch $@
+
+
+$(foreach app,mcp,$(app)-dev):%-dev:%-venv/bin/uvicorn
+	cd $*-container && \
+	${UVICORN} dev:app --port $($*_PORT) --reload --reload-exclude "tests/*" --reload-include "customer/*"
+
 
 
 # # a2a-dev:%-dev: %-venv/bin/fastapi
@@ -82,7 +95,6 @@ $(foreach app,$(aiohttp_apps),$(app)-test):%-test: %-venv/bin/pytest
 $(foreach app,$(aiohttp_apps),$(app)-ptw):%-ptw: %-venv/bin/pytest
 	cd $*-container && \
 	${BASE_DIR}$*-venv/bin/ptw --runner ${BASE_DIR}$*-venv/bin/pytest --pdb . -- --enable-livellm
-
 
 $(foreach app,$(aiohttp_apps),$(app)-docker):%-docker:
 	$(DOCKER) build $*-container -t $* -f $*-container/Dockerfile

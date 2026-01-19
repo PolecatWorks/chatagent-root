@@ -1,10 +1,8 @@
 # Provides the tools and resources that are available to the MCP server
 
 
-from aiohttp import web
 from customer.config import ServiceConfig
 
-from aiohttp_mcp import AiohttpMCP, setup_mcp_subapp
 from customer import keys
 
 import logging

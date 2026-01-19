@@ -1,7 +1,5 @@
-from aiohttp import web
 from customer.hams.config import HamsConfig
 import logging
-from customer import keys
 import signal
 import asyncio
 from prometheus_async import aio
@@ -149,6 +147,5 @@ def hams_app_create(base_app: web.Application, config: HamsConfig) -> web.Applic
 
     base_app.cleanup_ctx.append(hams_app_cleanup)
 
-    # https://docs.aiohttp.org/en/v3.8.4/web_advanced.html#cleanup-context
 
     return base_app

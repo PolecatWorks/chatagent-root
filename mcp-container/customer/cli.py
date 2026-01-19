@@ -7,7 +7,6 @@ import click
 import sys
 import logging
 import logging.config
-from pydantic_yaml import to_yaml_str
 
 from .config import ServiceConfig
 
@@ -78,13 +77,13 @@ def start(ctx, config, secrets):
     """Start the customer definition"""
     from customer import app_start
 
-    configObj: ServiceConfig = ServiceConfig.from_yaml(config.name, secrets)
+    configObj: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config.name, secrets)
 
     # Load logging configuration from YAML file
     logging.config.dictConfig(configObj.logging)
 
     logger = logging.getLogger(__name__)
-    print(to_yaml_str(configObj, indent=2))
+    # print(to_yaml_str(configObj, indent=2))
 
     app_start(configObj)
 

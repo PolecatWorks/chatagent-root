@@ -1,50 +1,78 @@
-from aiohttp import web
+from fastmcp.server.http import create_sse_app
+import astroid.brain.brain_scipy_signal
+from contextlib import asynccontextmanager
+from random import random
+from fastapi import FastAPI
 from customer.config import ServiceConfig
-from customer.llmconversationhandler import langchain_app_create
-from pydantic_yaml import to_yaml_str
 import logging
-from customer.hams import Hams, hams_app_create
-from customer.service import service_app_create
-from customer.mcp_server import mcp_server_app_create
 from .tools import tools_app_create
-from customer import keys
+from fastmcp import FastMCP
+from starlette.applications import Starlette
+from starlette.routing import Mount
+from  random import randint
+import yaml
+
 
 logger = logging.getLogger(__name__)
 
 
-def app_init(app: web.Application, config: ServiceConfig):
-    """
-    Initialize the service with the given configuration file
-    This is seperated from service_init as it is also used from the adev dev server
-    """
 
-    logger.info(f"CONFIG\n{to_yaml_str(config, indent=2)}")
-
-    hams_app_create(app, config.hams)
-    service_app_create(app, config)
-    mcp_server_app_create(app, config)
-    tools_app_create(app, config)
-
-    langchain_app_create(app, config)
-
-    return app
-
-
-def app_start(config: ServiceConfig):
+def app_init(config: ServiceConfig):
     """
     Start the service with the given configuration file
     """
-    app = web.Application()
 
-    app_init(app, config)
+    logger.info(f"CONFIG\n{(yaml.dump(config.model_dump(), sort_keys=False))}")
 
-    web.run_app(
-        app,
-        host=app[keys.config].webservice.url.host,
-        port=app[keys.config].webservice.url.port,
-        # TODO: Review the custom logging and replace into config
-        access_log_format='%a "%r" %s %b "%{Referer}i" "%{User-Agent}i"',
-        access_log=logger,
+
+    fastmcp_app = FastMCP(
+        name="Access to reconciliation records to confirm status of bills and payments",
+        instructions="Get the list of all active billing and payments records and confirm the status of specific records"
     )
 
-    logger.info(f"Service stopped")
+    @fastmcp_app.tool(description="return a random number")
+    def random_number():
+        return randint(1, 100)
+
+
+    # app = Starlette(
+    #     routes=[
+    #         Mount("/mcp-server", app=mcp_app),
+    #         # Add other routes as needed
+    #     ],
+    #     lifespan=mcp_app.lifespan,
+    # )
+
+    # uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+    @asynccontextmanager
+    async def app_lifespace(app: FastAPI):
+        print(f"App lifespan started {app}")
+        yield
+        print(f"App lifespan ended {app}")
+
+    fastmcp_app_http = fastmcp_app.http_app()
+    fastmcp_app_sse = create_sse_app(fastmcp_app, "/messages", "/mcp")
+
+
+    @asynccontextmanager
+    async def combined_lifespan(app: FastAPI):
+
+        async with app_lifespace(app):
+            print(f"App lifespan started {app}")
+            async with fastmcp_app_http.lifespan(app):
+                print(f"FastMCP lifespan started {app}")
+                async with fastmcp_app_sse.lifespan(app):
+                    print(f"SSE lifespan started {app}")
+                    yield
+                    print(f"SSE lifespan ended {app}")
+                print(f"FastMCP lifespan ended {app}")
+            print(f"App lifespan ended {app}")
+
+
+    app = FastAPI(lifespan=combined_lifespan)
+    app.mount("/mcp/http", fastmcp_app_http)
+    app.mount("/sse", fastmcp_app_sse)
+
+    return app
