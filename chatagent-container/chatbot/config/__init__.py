@@ -198,7 +198,7 @@ class ServiceConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="APP_",
-        secrets_nested_subdir=True  # Prevents additional fields not defined in the model
+        secrets_nested_subdir=True,  # Prevents additional fields not defined in the model
         env_nested_delimiter="__"
     )
 

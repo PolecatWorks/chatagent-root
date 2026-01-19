@@ -94,7 +94,7 @@ $(foreach app,$(aiohttp_apps) mcp,$(app)-ptw):%-ptw: %-venv/bin/pytest
 	cd $*-container && \
 	${BASE_DIR}$*-venv/bin/ptw --runner ${BASE_DIR}$*-venv/bin/pytest ${PDB} . -- --enable-livellm
 
-$(foreach app,$(aiohttp_apps),$(app)-docker):%-docker:
+$(foreach app,$(aiohttp_apps) mcp,$(app)-docker):%-docker:
 	$(DOCKER) build $*-container -t $* -f $*-container/Dockerfile
 
 # %-docker-test:

@@ -28,15 +28,15 @@ webservice:
 mcp:
   name: mcp-server
   instructions: "You are a helpful assistant."
-# hams:
-#   url: http://0.0.0.0:8079
-#   prefix: hams
-#   shutdownDuration: P0DT0H0M10S
-#   checks:
-#     timeout: 5
-#     fails: 2
-#     preflights: []
-#     shutdowns: []
+hams:
+  url: http://0.0.0.0:8079
+  prefix: hams
+  shutdownDuration: P0DT0H0M10S
+  checks:
+    timeout: 5
+    fails: 2
+    preflights: []
+    shutdowns: []
 #       # - name: Sidecar shutdown
 #       #   http: http://localhost:15000/quitquitquit
 #       #   method: POST

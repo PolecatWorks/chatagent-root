@@ -1,13 +1,12 @@
-
-from pydantic import BaseModel, Field
-from abc import ABC, abstractmethod
-import logging
-from pydantic import HttpUrl
+import asyncio
 from datetime import timedelta
+import logging
+from pydantic import Field, BaseModel
+from pydantic import HttpUrl
+from abc import ABC, abstractmethod
 from enum import Enum
 
 logger = logging.getLogger(__name__)
-
 
 
 class HamsCheck(ABC, BaseModel):
@@ -56,7 +55,6 @@ class HttpCheck(HamsCheck):
 
     async def run_check(self) -> bool:
         logger.debug(f"HttpCheck[{self.name}]: {self.http} == {self.returncode}")
-        return True
 
         # async with aiohttp.ClientSession() as session:
         #     if self.method == HttpMethodEnum.get:
@@ -67,7 +65,7 @@ class HttpCheck(HamsCheck):
         #             return response.status == self.returncode
 
 
-CheckType = HttpCheck  # Replaced Union[HttpCheck] with HttpCheck as it's the only type
+CheckType = HttpCheck # Replaced Union[HttpCheck] with HttpCheck as it's the only type
 
 
 class HamsChecks(BaseModel):
@@ -95,8 +93,8 @@ class HamsChecks(BaseModel):
             if all([await check.check() for check in checks]):
                 return True
             remaining_attempts -= 1
-            # if remaining_attempts > 0:
-            #     await asyncio.sleep(self.timeout)
+            if remaining_attempts > 0:
+                await asyncio.sleep(self.timeout)
 
         logger.error(f"Checks failed")
 
