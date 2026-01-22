@@ -1,4 +1,4 @@
-name: MCP Release
+name: Customer MCP Release
 
 on:
   push:
