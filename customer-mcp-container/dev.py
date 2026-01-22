@@ -4,6 +4,7 @@ from customer import app_init
 
 import logging
 
+
 config_filename = "tests/test_data/config.yaml"
 secrets_filename = "tests/test_data/secrets"
 
