@@ -64,6 +64,10 @@ myai:
         max_instances: 10
       - name: random_number
         max_instances: 10
+      - name: get_customer
+        max_instances: 10
+      - name: create_customer
+        max_instances: 10
 
     mcps:
       - name: customers
