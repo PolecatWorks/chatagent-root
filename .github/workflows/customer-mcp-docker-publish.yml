@@ -1,4 +1,4 @@
-name: MCP Docker
+name: Customer MCP Docker
 
 # This workflow builds and pushes the mcp container to GitHub Container Registry.
 # It handles multi-platform builds (amd64 and arm64).
@@ -31,9 +31,10 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: filter
         with:
-          customer-mcp:
-            - "customer-mcp-container/**"
-            - ".github/workflows/customer-mcp-docker-publish.yml"
+          filters: |
+            customer-mcp:
+              - "customer-mcp-container/**"
+              - ".github/workflows/customer-mcp-docker-publish.yml"
 
   build:
     needs: check-paths
@@ -47,7 +48,7 @@ jobs:
 
     # Use appropriate runners for each platform
     runs-on: ${{ matrix.platform == 'linux/amd64' && 'ubuntu-24.04' || matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm' }}
-    name: ${{ matrix.platform }} MCP Docker
+    name: ${{ matrix.platform }} Customer MCP Docker
     permissions:
       contents: read
       packages: write
@@ -206,7 +207,7 @@ jobs:
           docker buildx imagetools inspect '${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWERCASE }}:${{ steps.meta.outputs.version }}'
 
   ci-success:
-    name: MCP CI Success
+    name: Customer MCP CI Success
     needs: [check-paths, merge]
     if: always()
     runs-on: ubuntu-latest
