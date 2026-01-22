@@ -13,7 +13,7 @@ env:
   # Use ghcr.io for GitHub Container Registry
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}-mcp
+  IMAGE_NAME: ${{ github.repository }}-customer-mcp
 
 concurrency:
   # This concurrency group ensures that only one job in the group runs at a time.
@@ -25,20 +25,19 @@ jobs:
   check-paths:
     runs-on: ubuntu-latest
     outputs:
-      mcp: ${{ steps.filter.outputs.mcp }}
+      customer-mcp: ${{ steps.filter.outputs.customer-mcp }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: filter
         with:
-          filters: |
-            mcp:
-              - 'mcp-container/**'
-              - '.github/workflows/mcp-docker-publish.yml'
+          customer-mcp:
+            - "customer-mcp-container/**"
+            - ".github/workflows/customer-mcp-docker-publish.yml"
 
   build:
     needs: check-paths
-    if: needs.check-paths.outputs.mcp == 'true'
+    if: needs.check-paths.outputs.customer-mcp == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -63,7 +62,7 @@ jobs:
         run: |
           platform=${{ matrix.platform }}
           repo_name="${{ github.repository }}"
-          echo "IMAGE_NAME_LOWERCASE=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')-mcp" >> $GITHUB_ENV
+          echo "IMAGE_NAME_LOWERCASE=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')-customer-mcp" >> $GITHUB_ENV
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
@@ -93,15 +92,15 @@ jobs:
         id: build
         uses: docker/build-push-action@v5
         with:
-          context: mcp-container
+          context: customer-mcp-container
           push: ${{ github.event_name != 'pull_request' }}
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}
           outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWERCASE }},push-by-digest=true,name-canonical=true,push=true,oci-mediatypes=true
           cache-from: |
-            type=gha,scope=${{ github.repository }}-mcp-${{ github.ref_name }}-${{ matrix.platform }}
-            type=gha,scope=${{ github.repository }}-mcp-main-${{ matrix.platform }}
-          cache-to: type=gha,mode=max,scope=${{ github.repository }}-mcp-${{ github.ref_name }}-${{ matrix.platform }}
+            type=gha,scope=${{ github.repository }}-customer-mcp-${{ github.ref_name }}-${{ matrix.platform }}
+            type=gha,scope=${{ github.repository }}-customer-mcp-main-${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}-customer-mcp-${{ github.ref_name }}-${{ matrix.platform }}
 
       - name: Export digest
         run: |
@@ -142,7 +141,7 @@ jobs:
       - name: Prepare lowercase image name
         run: |
           repo_name="${{ github.repository }}"
-          echo "IMAGE_NAME_LOWERCASE=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')-mcp" >> $GITHUB_ENV
+          echo "IMAGE_NAME_LOWERCASE=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')-customer-mcp" >> $GITHUB_ENV
 
       - name: Download digests
         uses: actions/download-artifact@v4
@@ -214,7 +213,7 @@ jobs:
     steps:
       - name: Check Status
         run: |
-          if [[ "${{ needs.check-paths.outputs.mcp }}" == 'true' ]]; then
+          if [[ "${{ needs.check-paths.outputs.customer-mcp }}" == 'true' ]]; then
             if [[ "${{ needs.merge.result }}" != 'success' ]]; then
                echo "Build/Merge failed!"
                exit 1

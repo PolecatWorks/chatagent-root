@@ -7,21 +7,19 @@ name: Docker MCP
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     # Publish semver tags as releases.
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}-mcp
-
+  IMAGE_NAME: ${{ github.repository }}-customer-mcp
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -53,7 +51,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@v3 #v3.5.0
         with:
-          cosign-release: 'v2.2.4'
+          cosign-release: "v2.2.4"
 
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
@@ -92,13 +90,13 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v5
         with:
-          context: mcp-container
+          context: customer-mcp-container
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=mcp
-          cache-to: type=gha,mode=max,scope=mcp
+          cache-from: type=gha,scope=customer-mcp
+          cache-to: type=gha,mode=max,scope=customer-mcp
           outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=AioHttp basec MCP service
 
       # # Sign the resulting Docker image digest except on PRs.
