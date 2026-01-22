@@ -16,7 +16,7 @@ repository = "https://github.com/PolecatWorks/chatbot"
 include = ["LICENSE"]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.13"
 click = "^8"
 # "ruamel.yaml" = "^0.18.6"
 pydantic-yaml = {extras = ["pyyaml"], version = "^1.4"}

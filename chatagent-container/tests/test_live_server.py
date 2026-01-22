@@ -29,6 +29,7 @@ def server():
     )
 
     config: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config_filename, secrets_dir)
+    config.myai.toolbox.mcps = []  # Disable MCP connections for tests
 
     app = web.Application()
 
