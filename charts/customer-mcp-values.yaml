@@ -1,0 +1,7 @@
+---
+image:
+  repository: ghcr.io/polecatworks/chatagent-root-customer-mcp
+  tag: main
+  pullPolicy: Always
+
+secretName: customer-mcp

@@ -4,6 +4,12 @@ from pydantic import Field
 from pydantic import BaseModel
 from fastapi import FastAPI
 from .config import HamsConfig
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
 
 
 class HamsApp:
@@ -32,10 +38,17 @@ class HamsApp:
 
 
     async def start(self):
-        self.app_config= uvicorn.Config(self.app, host="0.0.0.0", port=9000, log_level="info")
+        if self.config.url.port is None:
+            raise ValueError("Port is required to be configured")
+
+        if self.config.url.host is None:
+            raise ValueError("Host is required to be configured")
+
+        self.app_config= uvicorn.Config(self.app, host=self.config.url.host, port=self.config.url.port, log_level="info")
         self.server = uvicorn.Server(self.app_config)
 
         self.task = asyncio.create_task(self.server.serve())
+        logger.info("Hams started on port 9000")
 
 
     async def stop(self):
