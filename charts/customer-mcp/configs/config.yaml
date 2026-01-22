@@ -1,0 +1,52 @@
+---
+logging:
+  version: 1
+  disable_existing_loggers: False
+  formatters:
+    standard:
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  handlers:
+    console:
+      class: logging.StreamHandler
+      formatter: standard
+      level: INFO
+      stream: ext://sys.stdout
+  loggers:
+    customer.hams:
+      handlers: [console]
+      level: WARNING
+      propagate: False
+  root:
+    handlers: [console]
+    level: INFO
+# bot:
+#   app_id: bot/id
+#   app_password: bot/passord
+webservice:
+  url: http://0.0.0.0:8080
+  prefix: /mcp
+mcp:
+  name: mcp-server
+  instructions: "You are a helpful assistant."
+hams:
+  url: http://0.0.0.0:8079
+  prefix: hams
+  shutdownDuration: P0DT0H0M10S
+  checks:
+    timeout: 5
+    fails: 2
+    preflights: []
+    shutdowns: []
+#       # - name: Sidecar shutdown
+#       #   http: http://localhost:15000/quitquitquit
+#       #   method: POST
+#       #   description: Quit the istio sidecar
+#       #   returncode: 200
+
+#     # - name: Istio
+#     #   http: http://google.com
+#     #   description: Check that Istio is up
+#     #   returncode: 300
+#     # - name: Istio
+#     #   http: http://google.co.uk
+#     #   description: Check that Istio is up

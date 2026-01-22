@@ -1,0 +1,17 @@
+{{- if .Values.devsecops.RequestAuthentication.jwtRules }}
+---
+apiVersion: "security.istio.io/v1beta1"
+kind: RequestAuthentication
+metadata:
+  name: {{ include "customer-mcp.fullname" . }}
+  labels:
+    {{- include "customer-mcp.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "customer-mcp.selectorLabels" . | nindent 6 }}
+  #   peers:
+  #   - mtls: {}
+  jwtRules:
+  {{-  tpl (toYaml .Values.devsecops.RequestAuthentication.jwtRules) . | nindent 4 }}
+{{- end }}
