@@ -1,0 +1,3 @@
+PUT instructions for accessing your service here
+
+This will expose a service for you that implements the botservice used by Azure

@@ -1,0 +1,79 @@
+{{- $configsha := tpl (include "customer-mcp.config" .) . | sha256sum }}
+{{- $configshamini := substr 0 8 $configsha }}
+{{- $volumesha := tpl (toYaml .Values.volumes) . | sha256sum }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "customer-mcp.fullname" . }}
+  labels:
+    {{- include "customer-mcp.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      component: service-pod
+      {{- include "customer-mcp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ $configsha }}
+        checksum/volumes: {{ $volumesha }}
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        component: service-pod
+        {{- include "customer-mcp.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "customer-mcp.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes: {{- include "customer-mcp.volumes" . | nindent 8 }}
+      containers:
+        - name: customer-mcp
+          env: {{- include "customer-mcp.env" . | nindent 10 }}
+          {{- with .Values.command }}
+          command: {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .Values.args }}
+          args: {{- toYaml . | nindent 10 }}
+          {{- end }}
+          volumeMounts: {{- include "customer-mcp.volumeMounts" . | nindent 10 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default  .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http-health
+              containerPort: 8079
+              protocol: TCP
+            - name: http-web
+              containerPort: 8080
+              protocol: TCP
+          lifecycle:
+            {{- toYaml .Values.lifecycle | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

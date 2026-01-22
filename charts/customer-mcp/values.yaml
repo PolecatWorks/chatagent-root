@@ -1,0 +1,176 @@
+env: {}
+
+replicaCount: 1
+
+lifecycle:
+  preStop:
+    httpGet:
+      port: http-health
+      path: "/hams/stop"
+livenessProbe:
+  httpGet:
+    port: http-health
+    path: "/hams/alive"
+  periodSeconds: 30
+  initialDelaySeconds: 30
+readinessProbe:
+  httpGet:
+    port: http-health
+    path: "/hams/ready"
+  periodSeconds: 5
+
+image: &image
+  repository: ghcr.io/polecatworks/chatagent-root-customer-mcp
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations:
+  prometheus.io/path: /hams/metrics
+  prometheus.io/port: "8179"
+  prometheus.io/scrape: "true"
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+  # sessionAffinity specifies the session affinity strategy.
+  # If defined (e.g., "ClientIP"), sticky sessions are enabled.
+  # If not defined, session affinity is disabled.
+  # sessionAffinity: "ClientIP" # Example if you want to enable it
+
+  # sessionAffinityConfig holds the configuration for session affinity
+  # when sessionAffinity is set (e.g., to "ClientIP").
+  # This field is optional and should only be defined if needed.
+  # Example for ClientIP:
+  # sessionAffinityConfig:
+  #   clientIP:
+  #     timeoutSeconds: 10800
+  # sessionAffinityConfig: {} # Ensure this is effectively removed or commented
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+configs: {} # Note: Defaults provided in helm configs dir
+
+args:
+  - start
+  - --config
+  - /opt/app/configs/config.yaml
+  - --secrets
+  - /opt/app/secrets
+
+secretName: null
+
+volumes: &volumes
+  - name: configs
+    configMap:
+      name: '{{ template "customer-mcp.fullname" . }}'
+  # - name: objects
+  #   emptyDir:
+  #     sizeLimit: 500Mi
+  - name: secrets
+    projected:
+      sources:
+        - secret:
+            # optional: true
+            name: '{{ .Values.secretName | default (include "customer-mcp.fullname" .) }}'
+            items: []
+              # - key: gcp_llm_key
+              #   path: aiclient/google_api_key
+              # - key: CLIENTID
+              #   path: bot/azure_bot_client/CLIENTID
+              # - key: CLIENTSECRET
+              #   path: bot/azure_bot_client/CLIENTSECRET
+              # - key: TENANTID
+              #   path: bot/azure_bot_client/TENANTID
+
+# kubectl create secret generic customer-mcp  --from-file=gcp_llm_key=customer-mcp-container/tests/test_data/secrets/aiclient/google_api_key
+
+volumeMounts: &volume-mount
+  - name: configs
+    mountPath: /opt/app/configs
+  # - name: objects
+  #   # TODO: remove objects as we use real object-store
+  #   mountPath: /opt/app/objects
+  - name: secrets
+    mountPath: /opt/app/secrets
+
+# virtualservice:
+#   targetService: dynamic-lists
+#   targetPort: 8999
+#   match:
+#   - uri:
+#       prefix: "/dynamic-lists/api/v0/hello"
+#     port: 8999
+
+devsecops:
+  RequestAuthentication:
+    jwtRules: []
+  AuthorizationPolicy:
+    rules: []
+# schema:
+#   command:
+#   - /usr/local/bin/k8s-python
+#   - migrate
+#   - --config
+#   - /opt/app/configs/serviceconfig.yaml
+#   - --secrets
+#   - /opt/app/secrets
+#   env:
+#     APP__PERSISTENCE__DB__CONNECTION__PASSWORD:
+#       valueFrom:
+#         secretKeyRef:
+#           name: tooling-postgres
+#           key: admin
+#     #! APP__PERSISTENCE__DB__CONNECTION__PASSWORD_FILE: database_admin/password
+#     APP__PERSISTENCE__DB__CONNECTION__USERNAME: postgres
+#   image: *image
+#     # repository: polecatworks/k8s-python
+#     # pullPolicy: IfNotPresent
+#   volumeMounts: *volume-mount
+#   volumes: *volumes

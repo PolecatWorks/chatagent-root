@@ -46,6 +46,9 @@ jobs:
       - name: Lint m365agentsplayground
         run: helm lint charts/m365agentsplayground
 
+      - name: Lint customer-mcp
+        run: helm lint charts/customer-mcp
+
   publish:
     needs: check-paths
     if: needs.check-paths.outputs.charts == 'true'
@@ -84,6 +87,10 @@ jobs:
           echo "Updated M365 Agents Playground Version:"
           grep "^version:" charts/m365agentsplayground/Chart.yaml
 
+          sed -i "s/^version: .*/&${suffix}/" charts/customer-mcp/Chart.yaml
+          echo "Updated Customer MCP Version:"
+          grep "^version:" charts/customer-mcp/Chart.yaml
+
       - name: Push Helm chart to OCI for chatagent
         uses: bsord/helm-push@v4
         with:
@@ -98,6 +105,16 @@ jobs:
         uses: bsord/helm-push@v4
         with:
           chart-folder: charts/m365agentsplayground
+          useOCIRegistry: true
+          registry-url: oci://ghcr.io/${{ steps.lower-repo.outputs.repository }}/helm
+          username: ${{ github.actor }}
+          access-token: ${{ secrets.GITHUB_TOKEN }}
+          force: true
+
+      - name: Push Helm chart to OCI for customer-mcp
+        uses: bsord/helm-push@v4
+        with:
+          chart-folder: charts/customer-mcp
           useOCIRegistry: true
           registry-url: oci://ghcr.io/${{ steps.lower-repo.outputs.repository }}/helm
           username: ${{ github.actor }}
