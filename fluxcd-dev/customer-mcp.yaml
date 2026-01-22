@@ -1,0 +1,31 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: customer-mcp
+spec:
+  interval: 10m
+  url: oci://ghcr.io/polecatworks/chatagent-root/helm/customer-mcp
+  ref:
+    semver: ">= 0.1.x-0"
+    semverFilter: .*-main
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: customer-mcp
+spec:
+  releaseName: customer-mcp
+  chartRef:
+    kind: OCIRepository
+    name: customer-mcp
+  interval: 50m
+  install:
+    remediation:
+      retries: 3
+  values:
+    image:
+      repository: ghcr.io/polecatworks/chatagent-root-customer-mcp
+      tag: main
+      pullPolicy: Always
+    secretName: customer-mcp
