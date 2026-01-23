@@ -1,0 +1,50 @@
+[project]
+name = "mya2a"
+version = "0.1.0"
+description = "A2A service to provide A2A interactions"
+authors = [{name = "Ben Greene",email = "BenJGreene@gmail.com"}]
+readme = "README.md"
+requires-python = "^3.13"
+
+[tool.poetry.dependencies]
+
+click =  "^8"
+pydantic-yaml = {extras = ["pyyaml"], version = "^1.4"}
+prometheus-async = "^25.1"
+pydantic-file-secrets = "^0.4"
+pydantic-settings = {extras = ["yaml"], version = "^2.10"}
+a2a-sdk = {extras = ["http-server"], version="^0.3"}
+uvicorn = "^0.38"
+langgraph = "^1.0"
+langchain-google-genai = "^3.0"
+langchain-openai = "^1.0"
+fastapi = "^0.121"
+
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8"
+Sphinx = "^8"
+sphinx-autodoc-typehints = "^3.2.0"
+pytest-sphinx = "^0.6"
+flake8 = "^7"
+flake8-black = "^0.4"
+pylint = "^4.0"
+sphinx-click = "^6.0"
+pytest-click = "^1.1"
+pytest-cov = "^7.0"
+pytest-watcher = "^0.4"
+fastapi = {extras = ["standard"], version = "^0.121"}
+
+
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+mya2a = "mya2a.cli:cli"

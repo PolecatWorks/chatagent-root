@@ -73,6 +73,10 @@ myai:
       - name: customers
         url: http://localhost:8180/mcp/http/mcp
         transport: streamable_http
+        mode: dynamic # Use dynamic mode to allow MCP tools without explicit config
+        default_tool_config:
+          max_instances: 10
+          timeout: P0DT0H0M30S # 30 seconds
 
 hams:
   url: http://localhost:8079

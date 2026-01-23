@@ -1,12 +1,37 @@
 from datetime import timedelta
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from pydantic import HttpUrl
 from enum import Enum
+from typing import Self
 
 
 class TransportEnum(str, Enum):
     streamable_http = "streamable_http"
     sse = "sse"
+
+
+class ToolModeEnum(str, Enum):
+    """Mode for handling MCP tools"""
+    strict = "strict"
+    dynamic = "dynamic"
+
+
+class ToolConfig(BaseModel):
+    """Configuration for tool execution."""
+
+    name: str | None = Field(
+        default=None,
+        description="Name of the tool, used to identify it in the system"
+    )
+
+    max_instances: int = Field(
+        default=5,
+        description="Maximum number of concurrent instances for this tool",
+    )
+
+    timeout: timedelta = Field(
+        default=timedelta(seconds=30), description="Timeout for tool execution"
+    )
 
 
 class McpConfig(BaseModel):
@@ -20,25 +45,25 @@ class McpConfig(BaseModel):
     transport: TransportEnum
     prompts: list[str] = []
 
-
-class ToolConfig(BaseModel):
-    """Configuration for tool execution."""
-
-    name: str = Field(description="Name of the tool, used to identify it in the system")
-
-    max_instances: int = Field(
-        default=5,
-        description="Default maximum number of concurrent instances for tools",
+    mode: ToolModeEnum = Field(
+        description="Mode for handling tools: 'strict' requires all tools to be configured, 'dynamic' uses defaults for unconfigured tools"
     )
 
-    timeout: timedelta = Field(
-        default=timedelta(seconds=30), description="Default timeout for tools"
+    default_tool_config: ToolConfig | None = Field(
+        default=None,
+        description="Default configuration for tools not explicitly listed (required if mode is 'dynamic')"
     )
 
-    instance_counts: int = Field(
-        default=5,
-        description="Current count of running instances for each tool",
-    )
+    @field_validator("default_tool_config")
+    @classmethod
+    def validate_default_config(cls, v, info):
+        """Validate that default_tool_config is provided when mode is dynamic"""
+        mode = info.data.get("mode")
+        if mode == ToolModeEnum.dynamic and v is None:
+            raise ValueError(
+                "default_tool_config is required when mode is 'dynamic'"
+            )
+        return v
 
 
 class ToolBoxConfig(BaseModel):
