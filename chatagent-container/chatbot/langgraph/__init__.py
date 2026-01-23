@@ -51,11 +51,33 @@ async def bind_tools_when_ready(app: web.Application):
         logger.error("MCPObjects not found in app context. Cannot bind tools.")
         raise ValueError("MCPObjects not found in app context.")
 
+    config: ServiceConfig = app[keys.config]
     langgraph_handler: LanggraphHandler = app[keys.langgraph_handler]
-
     mcpObjects: MCPObjects = app[keys.mcpobjects]
 
-    langgraph_handler.register_tools(mcpObjects.tools)
+    # Register tools from each MCP server with appropriate context
+    for mcp_config in config.myai.toolbox.mcps:
+        mcp_tools = mcpObjects.get_tools_for_mcp(mcp_config.name)
+
+        if not mcp_tools:
+            logger.debug(f"No tools to register from MCP '{mcp_config.name}'")
+            continue
+
+        # Create context for this MCP
+        mcp_context = ToolRegistrationContext(
+            source="mcp",
+            mcp_name=mcp_config.name,
+            mcp_mode=mcp_config.mode,
+            default_config=mcp_config.default_tool_config
+        )
+
+        logger.info(
+            f"Registering {len(mcp_tools)} tools from MCP '{mcp_config.name}' "
+            f"in {mcp_config.mode.value} mode"
+        )
+
+        langgraph_handler.register_tools(mcp_tools, context=mcp_context)
+
     langgraph_handler.bind_tools()
     langgraph_handler.compile()
 
