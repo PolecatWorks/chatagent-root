@@ -93,7 +93,8 @@ spec:
           mcps: []
             # - name: customers
             #   url: http://chatagent-mcp/mcp
-            #   transport: sse
+            #   transport: streamable_http
+            #   mode: strict
 
       hams:
         url: http://0.0.0.0:8079

@@ -59,7 +59,8 @@ myai:
     mcps: []
     # - name: customers
     #   url: http://localhost:8180/mcp
-    #   transport: sse
+    #   transport: streamable_http
+    #   mode: strict
 hams:
   url: http://0.0.0.0:8079
   prefix: hams

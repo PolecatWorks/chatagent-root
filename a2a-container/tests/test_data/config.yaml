@@ -4,7 +4,7 @@ logging:
   disable_existing_loggers: False
   formatters:
     standard:
-      format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
   handlers:
     console:
       class: logging.StreamHandler
@@ -64,11 +64,11 @@ webservice:
 #     mcps: []
 #     # - name: customers
 #     #   url: http://localhost:8180/mcp
-#     #   transport: sse
+#     #   transport: streamable_http
+#     #   mode: strict
 currency:
   genai:
     model: gemini-2.0-flash
-
 
 hams:
   url: http://localhost:8079

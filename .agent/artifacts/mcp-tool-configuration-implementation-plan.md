@@ -77,6 +77,11 @@
 - Status:
   - README updated with "Tool Configuration" section
   - `MIGRATION_GUIDE.md` created
+  - `hr-chatagent.yaml` updated with active MCP `mode: strict`
+  - Commented-out examples updated in:
+    - `charts/chatagent/configs/config.yaml`
+    - `fluxcd-dev/app-chatagent.yaml`
+    - `a2a-container/tests/test_data/config.yaml`
   - Config examples verified
 - Notes:
   - Documentation is clear and covers both migration and new usage
