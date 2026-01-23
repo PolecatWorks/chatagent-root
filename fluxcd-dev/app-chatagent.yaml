@@ -90,10 +90,17 @@ spec:
               max_instances: 10
             - name: count_calls
               max_instances: 10
-          mcps: []
-            # - name: customers
-            #   url: http://chatagent-mcp/mcp
-            #   transport: sse
+          mcps:
+            - default_tool_config:
+                max_instances: 10
+                timeout: P0DT0H0M30S
+              mode: dynamic
+              name: customers
+              transport: streamable_http
+              url: http://customer-mcp/mcp/http/mcp
+              # - name: customers
+              #   url: http://chatagent-mcp/mcp
+              #   transport: sse
 
       hams:
         url: http://0.0.0.0:8079
