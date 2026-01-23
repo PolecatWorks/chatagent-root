@@ -1,10 +1,7 @@
-
-
 from collections.abc import Sequence
 from chatbot.chathistory import ChatHistory
 from langchain_core.messages import (
     HumanMessage,
-    SystemMessage,
     AIMessage,
 )
 from langchain_core.language_models import BaseChatModel
@@ -15,7 +12,7 @@ from prometheus_client import REGISTRY, CollectorRegistry, Summary
 import langgraph
 from langgraph.checkpoint.memory import InMemorySaver
 from langchain_core.runnables import RunnableConfig
-from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.prebuilt import ToolNode
 from langchain_core.tools.structured import StructuredTool
 
 from .agentstate import AgentState
@@ -24,10 +21,9 @@ from chatbot.langgraph import toolregistry
 from chatbot.config import MyAiConfig
 
 import logging
+
 # Set up logging
 logger = logging.getLogger(__name__)
-
-
 
 
 class LanggraphHandler:
@@ -51,13 +47,9 @@ class LanggraphHandler:
         registry: CollectorRegistry | None = REGISTRY,
     ):
         self.config = config
-        self.function_registry = toolregistry.ToolRegistry(
-            config.toolbox, registry=registry
-        )
+        self.function_registry = toolregistry.ToolRegistry(config.toolbox, registry=registry)
         self.client = client
-        self.llm_summary_metric = Summary(
-            "llm_usage", "Summary of LLM usage", registry=registry
-        )
+        self.llm_summary_metric = Summary("llm_usage", "Summary of LLM usage", registry=registry)
 
         # Initialize the graph
         workflow = StateGraph(AgentState)
@@ -114,26 +106,24 @@ class LanggraphHandler:
         new_state = state.model_copy(update={"messages": state.messages + [response]})
         return new_state
 
-    async def _call_tool(self, *args, **kwargs) -> dict:
+    async def _call_tool(self, state: AgentState) -> dict:
         """
         Node to execute tool calls.
         """
 
-        print(f"ToolNode called with args: {args}, kwargs: {kwargs}")
+        print(f"ToolNode called with state: {state}")
 
         logger.error(f"State is {state}")
 
-        messages = state["messages"]
+        messages = state.messages
         last_message = messages[-1]
         if not isinstance(last_message, AIMessage) or not last_message.tool_calls:
             # Should not happen if routed correctly
             logger.error("Call tool node received state without tool calls.")
-            # todo: Handle this case more gracefully, maybe raise an exception or return an error message
+            # todo: Handle this case more gracefully
             return {}
 
-        tool_responses = await self.function_registry.perform_tool_actions(
-            last_message.tool_calls
-        )
+        tool_responses = await self.function_registry.perform_tool_actions(last_message.tool_calls)
         # Append tool responses to the messages list
         return {"messages": messages + tool_responses}
 
@@ -223,9 +213,7 @@ class LanggraphHandler:
     #     logger.debug("File added to conversation but not sent to LLM yet.")
     #     return None
 
-    async def ainvoke_agent(
-        self, prompt: str, chat_history: ChatHistory
-    ) -> str:
+    async def ainvoke_agent(self, prompt: str, chat_history: ChatHistory) -> str:
         """Invoke the agent with the given prompt and chat history.
         This method prepares the messages, calls the graph, and returns the response.
 
@@ -264,15 +252,10 @@ class LanggraphHandler:
             logger.error("Graph execution resulted in no messages.")
             return "Sorry, I encountered an issue and couldn't generate a response."
         else:
-            logger.error(
-                f"Unexpected final response type from graph: {type(final_response_message)}"
-            )
+            logger.error(f"Unexpected final response type from graph: {type(final_response_message)}")
             return "Sorry, I encountered an error processing your request."
 
-
-    async def chat(
-        self, conversation_id: str, identity: str, prompt: str
-    ) -> str:
+    async def chat(self, conversation_id: str, identity: str, prompt: str) -> str:
         """Make a chat request to the AI model with the provided prompt.
         This method sends a prompt to the model and processes the response.
         It handles tool calls made by the model, executes the corresponding tool,
@@ -311,7 +294,5 @@ class LanggraphHandler:
             logger.error("Graph execution resulted in no messages.")
             return "Sorry, I encountered an issue and couldn't generate a response."
         else:
-            logger.error(
-                f"Unexpected final response type from graph: {type(final_response_message)}"
-            )
+            logger.error(f"Unexpected final response type from graph: {type(final_response_message)}")
             return "Sorry, I encountered an error processing your request."

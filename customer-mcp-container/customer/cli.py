@@ -48,8 +48,6 @@ def cli(ctx, debug):
 
 # ------------- CLI commands go below here -------------
 
-from customer.config import ServiceConfig
-
 
 def shared_options(function):
     function = click.option("--config", required=True, type=click.File("rb"))(function)
@@ -78,12 +76,13 @@ def start(ctx, config, secrets):
     """Start the customer definition"""
     from customer import app_init
 
-    configObj: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config.name, secrets)
+    configObj: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(
+        config.name, secrets
+    )
 
     # Load logging configuration from YAML file
     logging.config.dictConfig(configObj.logging)
 
-    logger = logging.getLogger(__name__)
     # print(to_yaml_str(configObj, indent=2))
 
     app = app_init(configObj)
@@ -94,8 +93,9 @@ def start(ctx, config, secrets):
     if configObj.webservice.url.port is None:
         raise ValueError("Port is required to be configured")
 
-
-    uvicorn.run(app, host=configObj.webservice.url.host, port=configObj.webservice.url.port)
+    uvicorn.run(
+        app, host=configObj.webservice.url.host, port=configObj.webservice.url.port
+    )
 
 
 # ------------- CLI commands above here -------------

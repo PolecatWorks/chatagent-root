@@ -1,15 +1,12 @@
 from dataclasses import dataclass
-from typing import Any, Literal
-from collections.abc import Sequence, Callable  # For List and Callable
+from typing import Literal
+from collections.abc import Sequence
 from chatbot.config.tool import ToolBoxConfig, ToolConfig, ToolModeEnum
 from langchain_core.messages.tool import ToolCall, ToolMessage
 from langchain_core.tools.structured import StructuredTool
 import logging
 import asyncio
-from pydantic_yaml import to_yaml_str
 from prometheus_client import REGISTRY, CollectorRegistry, Summary
-
-import io
 from ruamel.yaml import YAML
 
 yaml = YAML()
@@ -21,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ToolRegistrationContext:
     """Context for tool registration to track source and mode"""
+
     source: Literal["local", "mcp"]
     mcp_name: str | None = None
     mcp_mode: ToolModeEnum | None = None
@@ -44,10 +42,9 @@ class ToolRegistry:
     ):
         self.registry: dict[str, ToolDefinition] = {}
         self.toolboxConfig = toolboxConfig
-        # Load the tool definition as dict from the list form (List form is easier to manage in k8s (ie lists enable replace vs change))
-        self.tool_definition_dict = {
-            tool.name: tool for tool in self.toolboxConfig.tools if tool.name is not None
-        }
+        # Load the tool definition as dict from the list form
+        # (List form is easier to manage in k8s (ie lists enable replace vs change))
+        self.tool_definition_dict = {tool.name: tool for tool in self.toolboxConfig.tools if tool.name is not None}
         self.prometheus_registry = registry
         self.tool_usage_metric = Summary(
             "tool_usage",
@@ -85,17 +82,13 @@ class ToolRegistry:
     def register_tools(
         self,
         tools: Sequence[StructuredTool],
-        context: ToolRegistrationContext | None = None
+        context: ToolRegistrationContext | None = None,
     ) -> None:
         """Registers multiple tools with the client."""
         for tool in tools:
             self.register_tool(tool, context=context)
 
-    def register_tool(
-        self,
-        tool: StructuredTool,
-        context: ToolRegistrationContext | None = None
-    ) -> None:
+    def register_tool(self, tool: StructuredTool, context: ToolRegistrationContext | None = None) -> None:
         """Registers a tool with the client.
 
         Args:
@@ -131,7 +124,8 @@ Configured tools: {list(self.tool_definition_dict.keys())}
             if context.mcp_mode == ToolModeEnum.strict:
                 # Strict mode: tool MUST be configured
                 if tool_name not in self.tool_definition_dict:
-                    error_msg = f"""Tool '{tool_name}' from MCP server '{context.mcp_name}' is not configured in the toolbox.
+                    error_msg = f"""Tool '{tool_name}' from MCP server '{context.mcp_name}' \
+is not configured in the toolbox.
 
 MCP Server: {context.mcp_name}
 Mode: strict
@@ -148,7 +142,7 @@ To resolve:
 
                 # Register with explicit configuration
                 tool_config = self.tool_definition_dict[tool_name]
-                logger.debug(f"Tool '{tool_name}' from MCP '{context.mcp_name}' (strict mode) registered with explicit configuration")
+                logger.debug(f"Tool '{tool_name}' from MCP '{context.mcp_name}' " f"(strict mode) registered with explicit configuration")
 
             elif context.mcp_mode == ToolModeEnum.dynamic:
                 # Dynamic mode: use defaults if not configured
@@ -156,26 +150,12 @@ To resolve:
 
                 if explicit_config is not None:
                     # Tool is configured - merge with defaults
-                    tool_config = self._merge_tool_config(
-                        tool_name,
-                        explicit_config,
-                        context.default_config
-                    )
-                    logger.debug(
-                        f"Tool '{tool_name}' from MCP '{context.mcp_name}' (dynamic mode) "
-                        f"configuration merged: explicit={explicit_config}, default={context.default_config}, final={tool_config}"
-                    )
+                    tool_config = self._merge_tool_config(tool_name, explicit_config, context.default_config)
+                    logger.debug(f"Tool '{tool_name}' from MCP '{context.mcp_name}' " f"(dynamic mode) configuration merged: " f"explicit={explicit_config}, " f"default={context.default_config}, final={tool_config}")
                 else:
                     # Tool not configured - use defaults
-                    tool_config = self._merge_tool_config(
-                        tool_name,
-                        None,
-                        context.default_config
-                    )
-                    logger.info(
-                        f"Tool '{tool_name}' from MCP '{context.mcp_name}' not explicitly configured, "
-                        f"using default configuration (max_instances={tool_config.max_instances}, timeout={tool_config.timeout})"
-                    )
+                    tool_config = self._merge_tool_config(tool_name, None, context.default_config)
+                    logger.info(f"Tool '{tool_name}' from MCP '{context.mcp_name}' " f"not explicitly configured, " f"using default configuration (" f"max_instances={tool_config.max_instances}, " f"timeout={tool_config.timeout})")
             else:
                 raise ValueError(f"Unknown mode: {context.mcp_mode}")
         else:
@@ -190,9 +170,7 @@ To resolve:
 
         logger.debug(f"Tool registered: {tool_name}")
 
-    async def perform_tool_actions(
-        self, parts: Sequence[ToolCall]
-    ) -> Sequence[ToolMessage]:
+    async def perform_tool_actions(self, parts: Sequence[ToolCall]) -> Sequence[ToolMessage]:
         """Performs actions using the registered tools.
         Reply back with an array to match what was called
         """

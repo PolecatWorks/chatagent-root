@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MCPObjects:
     """Container for MCP server objects, tracking tools per server"""
+
     tools_by_mcp: dict[str, list[StructuredTool]] = field(default_factory=dict)
     all_tools: list[StructuredTool] = field(default_factory=list)
     resources: dict[str, list[Blob]] = field(default_factory=dict)
@@ -35,12 +36,7 @@ async def connect_to_mcp_server(app):
 
     # Create the multi-server MCP client
     try:
-        client = MultiServerMCPClient(
-            {
-                mcp.name: {"url": str(mcp.url), "transport": mcp.transport.value}
-                for mcp in toolbox_config.mcps
-            }
-        )
+        client = MultiServerMCPClient({mcp.name: {"url": str(mcp.url), "transport": mcp.transport.value} for mcp in toolbox_config.mcps})
     except Exception as e:
         error_msg = f"Failed to create MCP client: {str(e)}"
         logger.error(error_msg)
@@ -63,14 +59,9 @@ async def connect_to_mcp_server(app):
 
             # Check if MCP returned no tools
             if not mcp_tools:
-                logger.warning(
-                    f"MCP server '{mcp.name}' at {mcp.url} returned no tools"
-                )
+                logger.warning(f"MCP server '{mcp.name}' at {mcp.url} returned no tools")
             else:
-                logger.info(
-                    f"MCP server '{mcp.name}' returned {len(mcp_tools)} tools: "
-                    f"{[tool.name for tool in mcp_tools]}"
-                )
+                logger.info(f"MCP server '{mcp.name}' returned {len(mcp_tools)} tools: " f"{[tool.name for tool in mcp_tools]}")
 
             # Check for configured tools that are no longer available
             mcp_tool_names = {tool.name for tool in mcp_tools}
@@ -78,9 +69,7 @@ async def connect_to_mcp_server(app):
                 if configured_tool not in mcp_tool_names:
                     # This tool was configured but not returned by this MCP
                     # We can't be 100% sure it came from this MCP, but log a warning
-                    logger.debug(
-                        f"Tool '{configured_tool}' is configured but not available from MCP server '{mcp.name}'"
-                    )
+                    logger.debug(f"Tool '{configured_tool}' is configured but not " f"available from MCP server '{mcp.name}'")
 
             # Store tools for this MCP
             tools_by_mcp[mcp.name] = mcp_tools
@@ -107,10 +96,7 @@ The application cannot start without connecting to all configured MCP servers.
             resources[mcp.name] = []
 
         try:
-            prompts[mcp.name] = {
-                prompt: await client.get_prompt(mcp.name, prompt)
-                for prompt in mcp.prompts
-            }
+            prompts[mcp.name] = {prompt: await client.get_prompt(mcp.name, prompt) for prompt in mcp.prompts}
         except Exception as e:
             logger.warning(f"Failed to get prompts from MCP '{mcp.name}': {str(e)}")
             prompts[mcp.name] = {}
@@ -122,10 +108,7 @@ The application cannot start without connecting to all configured MCP servers.
         prompts=prompts,
     )
 
-    logger.info(
-        f"MCP initialization complete. Total tools: {len(all_tools)}, "
-        f"MCPs: {list(tools_by_mcp.keys())}"
-    )
+    logger.info(f"MCP initialization complete. Total tools: {len(all_tools)}, " f"MCPs: {list(tools_by_mcp.keys())}")
 
     app[keys.mcpobjects] = mcpObjects
 

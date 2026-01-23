@@ -1,7 +1,3 @@
-
-
-
-
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from chatbot.chathistory import ChatHistory
 from langchain_core.messages import AnyMessage
@@ -10,9 +6,16 @@ from langchain_core.load import dumps, loads
 
 
 def test_human_message():
-    values ={'content': 'test me 0', 'additional_kwargs': {}, 'response_metadata': {}, 'type': 'human', 'name': None, 'id': '2ae6fb58-5098-4bc7-a959-f963347096af'}
+    values = {
+        "content": "test me 0",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "type": "human",
+        "name": None,
+        "id": "2ae6fb58-5098-4bc7-a959-f963347096af",
+    }
 
-    hm = HumanMessage(content='test me 0')
+    hm = HumanMessage(content="test me 0")
 
     hm_json = dumps(hm)
     print(f"hm_json={hm_json}")
@@ -24,7 +27,7 @@ def test_human_message():
 
 
 def test_tool_message():
-    tm = ToolMessage(content='tool used', tool_call_id='call-123')
+    tm = ToolMessage(content="tool used", tool_call_id="call-123")
     print(f"tm={tm}")
     tm_json = dumps(tm)
 
@@ -38,10 +41,11 @@ def test_tool_message():
 
 
 def test_all_messages():
-    messages = [HumanMessage(content='test me 0'),
-                SystemMessage(content='system here'),
-                ToolMessage(content='tool used', tool_call_id='call-123'),
-                ]
+    messages = [
+        HumanMessage(content="test me 0"),
+        SystemMessage(content="system here"),
+        ToolMessage(content="tool used", tool_call_id="call-123"),
+    ]
 
     am_json = dumps(messages)
     print(f"am_json={am_json}")

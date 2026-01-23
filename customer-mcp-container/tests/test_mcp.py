@@ -1,12 +1,5 @@
-import os
 from fastmcp import Client
-
-import pytest
-
-from mcp.client.stdio import stdio_client
-from mcp import ClientSession, StdioServerParameters, types
 from fastmcp.client.transports import StreamableHttpTransport
-
 
 
 async def test_mcp_app(mcp_app):
@@ -20,9 +13,7 @@ async def test_mcp_app(mcp_app):
 
 async def test_http_transport(mcp_server: str):
     """Test actual HTTP transport behavior."""
-    async with Client(
-        transport=StreamableHttpTransport(mcp_server)
-    ) as client:
+    async with Client(transport=StreamableHttpTransport(mcp_server)) as client:
         result = await client.ping()
         assert result is True
 

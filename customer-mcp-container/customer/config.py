@@ -1,12 +1,8 @@
 from customer.hams import HamsConfig
 from customer.mcp_server import MCPConfig
-from pydantic import Field, BaseModel
-from pydantic import HttpUrl
+from pydantic import Field, BaseModel, HttpUrl
 from pathlib import Path
-from typing import Any, Self
-from pydantic import ConfigDict, Field, BaseModel, SecretStr, field_validator, HttpUrl
-from typing import Type, Tuple
-
+from typing import Any, Self, Type, Tuple
 from pydantic_settings import (
     BaseSettings,
     YamlConfigSettingsSource,
@@ -14,14 +10,10 @@ from pydantic_settings import (
     PydanticBaseSettingsSource,
     NestedSecretsSettingsSource,
 )
-import os
 
 
-
-
-
-
-# TODO: Look here in future: https://github.com/pydantic/pydantic/discussions/2928#discussioncomment-4744841
+# TODO: Look here in future:
+# https://github.com/pydantic/pydantic/discussions/2928#discussioncomment-4744841
 class WebServerConfig(BaseModel):
     """
     Configuration for the web server
@@ -29,7 +21,6 @@ class WebServerConfig(BaseModel):
 
     url: HttpUrl = Field(description="Host to listen on")
     prefix: str = Field(description="Prefix for the name of the resources")
-
 
 
 class ServiceConfig(BaseSettings):
@@ -44,8 +35,9 @@ class ServiceConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="APP_",
-        secrets_nested_subdir=True, # Prevents additional fields not defined in the model
-        env_nested_delimiter="__"
+        # Prevents additional fields not defined in the model
+        secrets_nested_subdir=True,
+        env_nested_delimiter="__",
     )
 
     @classmethod
@@ -55,7 +47,6 @@ class ServiceConfig(BaseSettings):
         cls.model_config["secrets_dir"] = secrets_path
 
         return cls()
-
 
     @classmethod
     def settings_customise_sources(
@@ -70,8 +61,7 @@ class ServiceConfig(BaseSettings):
         # Explicitly create NestedSecretsSettingsSource with NO prefix
         # so it maps filenames like 'api_key' and 'db/password' directly.
         nested_secrets = NestedSecretsSettingsSource(
-            file_secret_settings,
-            env_prefix=""
+            file_secret_settings, env_prefix=""
         )
 
         return (

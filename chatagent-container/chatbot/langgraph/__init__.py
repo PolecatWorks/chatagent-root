@@ -1,41 +1,18 @@
-import asyncio
-import base64
-from typing import Any
-from collections.abc import Sequence, Callable  # For List and Callable
-from chatbot.config import MyAiConfig, ServiceConfig
+from chatbot.config import ServiceConfig, LangchainConfig
 from aiohttp import web
 from chatbot import keys
-from dataclasses import dataclass
-from abc import ABC, abstractmethod
-from chatbot.hams import config
-
 from chatbot.langgraph.handler import LanggraphHandler
 from chatbot.langgraph.toolregistry import ToolRegistrationContext
 from chatbot.mcp_client import MCPObjects
-from chatbot.config import LangchainConfig
-
-
-
-
-from langchain_core.messages.base import BaseMessage
-
-
-
 
 
 from chatbot.tools import mytools
-from langchain.chat_models import init_chat_model
 import httpx
-
-
-from pydantic import BaseModel
 
 import logging
 
 # Set up logging
 logger = logging.getLogger(__name__)
-
-
 
 
 async def bind_tools_when_ready(app: web.Application):
@@ -68,19 +45,15 @@ async def bind_tools_when_ready(app: web.Application):
             source="mcp",
             mcp_name=mcp_config.name,
             mcp_mode=mcp_config.mode,
-            default_config=mcp_config.default_tool_config
+            default_config=mcp_config.default_tool_config,
         )
 
-        logger.info(
-            f"Registering {len(mcp_tools)} tools from MCP '{mcp_config.name}' "
-            f"in {mcp_config.mode.value} mode"
-        )
+        logger.info(f"Registering {len(mcp_tools)} tools from MCP '{mcp_config.name}' " f"in {mcp_config.mode.value} mode")
 
         langgraph_handler.register_tools(mcp_tools, context=mcp_context)
 
     langgraph_handler.bind_tools()
     langgraph_handler.compile()
-
 
 
 def llm_model(config: LangchainConfig):
@@ -107,12 +80,9 @@ def llm_model(config: LangchainConfig):
                 http_client=httpx_client,
             )
         case _:
-            raise ValueError(
-                f"Unsupported model provider: {config.model_provider}"
-            )
+            raise ValueError(f"Unsupported model provider: {config.model_provider}")
 
     return model
-
 
 
 def langgraph_app_create(app: web.Application, config: ServiceConfig):
@@ -123,12 +93,10 @@ def langgraph_app_create(app: web.Application, config: ServiceConfig):
         logger.error("Metrics registry not found in app context. Cannot initialize LLMConversationHandler.")
         raise ValueError("Metrics registry not found in app context.")
 
-
     model = llm_model(config.aiclient)
 
     # use bind_tools_when_ready to move some of the constructions funtions to an async runtime
     app.on_startup.append(bind_tools_when_ready)
-
 
     langgraph_handler = LanggraphHandler(config.myai, model, registry=app[keys.metrics])
 

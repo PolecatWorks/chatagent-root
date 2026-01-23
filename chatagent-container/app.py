@@ -4,7 +4,6 @@ from chatbot import app_init
 from aiohttp import web
 import logging
 import logging.config
-from pydantic_yaml import to_yaml_str
 
 
 def create_app():

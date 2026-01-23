@@ -1,4 +1,3 @@
-
 import sys
 from typing import Optional
 from aiohttp import web
@@ -46,7 +45,7 @@ class ChatHistoryStoreItem(StoreItem):
         return model_json
 
     @staticmethod
-    def from_json_to_store_item(json_data: dict) -> 'ChatHistoryStoreItem':
+    def from_json_to_store_item(json_data: dict) -> "ChatHistoryStoreItem":
         print("Loading ChatHistoryStoreItem from JSON")
         print(type(json_data))
         print(json_data)
@@ -54,28 +53,26 @@ class ChatHistoryStoreItem(StoreItem):
         return ChatHistoryStoreItem(chat_history)
 
 
-
-def azure_app_create(app: web.Application, config: ServiceConfig)  -> web.Application:
+def azure_app_create(app: web.Application, config: ServiceConfig) -> web.Application:
     """Create the Azure Bot related routes and handlers."""
-
 
     if keys.langgraph_handler not in app:
         raise RuntimeError("langgraph_handler is missing from app; ensure it's registered before calling azure_app_create.")
 
     langgraph_handler: LanggraphHandler = app[keys.langgraph_handler]
 
-    agents_sdk_config=  {
-        'AGENTAPPLICATION': {},
-        'CONNECTIONS': {
-            'SERVICE_CONNECTION': {
-                'SETTINGS': {
-                    'CLIENTID': config.bot.azure_bot_client.CLIENTID,
-                    'CLIENTSECRET': config.bot.azure_bot_client.CLIENTSECRET.get_secret_value(),
-                    'TENANTID': config.bot.azure_bot_client.TENANTID
+    agents_sdk_config = {
+        "AGENTAPPLICATION": {},
+        "CONNECTIONS": {
+            "SERVICE_CONNECTION": {
+                "SETTINGS": {
+                    "CLIENTID": config.bot.azure_bot_client.CLIENTID,
+                    "CLIENTSECRET": config.bot.azure_bot_client.CLIENTSECRET.get_secret_value(),
+                    "TENANTID": config.bot.azure_bot_client.TENANTID,
                 }
             }
         },
-        'CONNECTIONSMAP': {}
+        "CONNECTIONSMAP": {},
     }
 
     STORAGE = MemoryStorage()
@@ -86,34 +83,31 @@ def azure_app_create(app: web.Application, config: ServiceConfig)  -> web.Applic
     app[keys.storage] = STORAGE
     app[keys.cloud_adapter] = ADAPTER
 
-
     AGENT_APP = AgentApplication[TurnState](
-        storage=STORAGE, adapter=ADAPTER, authorization=AUTHORIZATION, **agents_sdk_config
+        storage=STORAGE,
+        adapter=ADAPTER,
+        authorization=AUTHORIZATION,
+        **agents_sdk_config,
     )
 
     app[keys.agent_app] = AGENT_APP
 
     @AGENT_APP.conversation_update("membersAdded")
     async def on_members_added(context: TurnContext, _state: TurnState):
-        await context.send_activity(
-            "Welcome to the empty agent! "
-            "This agent is designed to be a starting point for your own agent development."
-        )
+        await context.send_activity("Welcome to the empty agent! " "This agent is designed to be a starting point for your own agent development.")
         return True
-
 
     @AGENT_APP.message(re.compile(r"^hello$"))
     async def on_hello(context: TurnContext, _state: TurnState):
         await context.send_activity("Hello!")
 
-
     @AGENT_APP.activity("message")
     async def on_message(context: TurnContext, state: TurnState):
-        context.streaming_response.queue_informative_update(
-            "Working on a response for you..."
-        )
+        context.streaming_response.queue_informative_update("Working on a response for you...")
         chat_history_store_item = state.get_value(
-            "ConversationState.chatHistory", lambda: ChatHistoryStoreItem(), target_cls=ChatHistoryStoreItem
+            "ConversationState.chatHistory",
+            lambda: ChatHistoryStoreItem(),
+            target_cls=ChatHistoryStoreItem,
         )
 
         # Check whether langgraph_handler has attribute 'graph'
@@ -135,7 +129,6 @@ def azure_app_create(app: web.Application, config: ServiceConfig)  -> web.Applic
 
         # await context.send_activity("This is where you would integrate with the LLMConversationHandler.")
 
-
     @AGENT_APP.error
     async def on_error(context: TurnContext, error: Exception):
         # This check writes out errors to console log .vs. app insights.
@@ -147,10 +140,7 @@ def azure_app_create(app: web.Application, config: ServiceConfig)  -> web.Applic
         # Send a message to the user
         await context.send_activity("The bot encountered an error or bug.")
 
-
     app.add_routes([web.view(config.bot.api_path, AzureBotView)])
 
-    logger.info(
-        f"Bot: {app[keys.config].webservice.url.host}:{app[keys.config].webservice.url.port}{app[keys.config].bot.api_path}"
-    )
+    logger.info(f"Bot: {app[keys.config].webservice.url.host}:{app[keys.config].webservice.url.port}{app[keys.config].bot.api_path}")
     return app

@@ -20,11 +20,13 @@ This document outlines the coding standards, workflows, and operational rules fo
     - Root `HelmRelease` files (e.g., `hr-chatagent.yaml`)
 - **Reasoning**: Prevents application startup failures in production and testing environments due to schema mismatches.
 
-## 3. Testing Standards
+## 3. Testing & Quality Standards
 - **Rule**: Never commit changes without running the relevant `make <target>-test` command.
-- **Rule**: Before merging to `main`, verify all relevant Docker builds are successful using `make <target>-docker` (e.g., `make chatagent-docker`, `make customer-mcp-docker`).
-- **Rule**: New features should include a dedicated test file in `tests/` (e.g., `tests/test_tool_configuration.py`).
-- **Reasoning**: Ensures stability and verifies that new logic meets requirements before being merged.
+- **Rule**: Run `make lint` before every commit to ensure code quality and consistent formatting.
+- **Rule**: After fixing lint issues, you MUST run tests again to verify that the formatting changes didn't break functionality.
+- **Rule**: Before merging to `main`, verify all relevant Docker builds are successful using `make <target>-docker`.
+- **Rule**: New features should include a dedicated test file in `tests/`.
+- **Reasoning**: Ensures stability and keeps the codebase clean. Running tests after linting prevents regressions caused by automatic formatters or manual cleanup.
 
 ## 4. Documentation Requirements
 - **Rule**: Every configuration change that breaks backward compatibility or introduces new required fields MUST be accompanied by:

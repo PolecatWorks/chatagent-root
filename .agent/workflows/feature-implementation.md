@@ -18,10 +18,14 @@ For each Phase defined in the plan:
 // turbo
 2. Run the relevant tests using the `Makefile` (e.g., `make chatagent-test`).
 3. If tests fail, debug and repeat step 2.
-4. Once tests pass, update the Implementation Plan:
+// turbo
+4. Run `make lint` to clean up the code.
+// turbo
+5. **CRITICAL**: Re-run tests after linting to ensure no regressions were introduced by formatting or cleanup.
+6. Once tests and lint pass, update the Implementation Plan:
     - Set Status to `COMPLETE`.
     - Record Actual Time.
-5. Commit the changes with a descriptive message following conventional commits (e.g., `feat(mcp): ...` or `fix(config): ...`).
+7. Commit the changes with a descriptive message following conventional commits.
 
 ## 3. Configuration & Documentation Sync
 1. Search the codebase for all `config.yaml` files and environment overrides.

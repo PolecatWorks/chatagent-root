@@ -24,9 +24,7 @@ def server():
 
     config_filename = "tests/test_data/config.yaml"
     default_secrets = "tests/test_data/secrets" if os.path.exists("tests/test_data/secrets") else "tests/test_data/secrets_sample"
-    secrets_dir = os.environ.get(
-        "TEST_SECRETS_DIR", default_secrets
-    )
+    secrets_dir = os.environ.get("TEST_SECRETS_DIR", default_secrets)
 
     config: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config_filename, secrets_dir)
     config.myai.toolbox.mcps = []  # Disable MCP connections for tests
@@ -52,8 +50,6 @@ def server():
     asyncio.run(runner.cleanup())
 
 
-
-
 async def test_llm_chat(server):
     """
     Test the LLM conversation handler's chat functionality.
@@ -64,9 +60,6 @@ async def test_llm_chat(server):
         # conversation_account = ConversationAccount(
         #     id="test-conversation", name="Test Conversation", conversation_type="test-type"
         # )
-
-
-
 
         # # Create an instance of LLMConversationHandler
         # llm_handler = LLMConversationHandler(session)
