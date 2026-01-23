@@ -27,6 +27,39 @@ This sample **requires** prerequisites in order to run.
 - Enter a Bot URL of `http://localhost:3978/api/messages`
 
 
+# Tool Configuration
+
+The chatbot supports connecting to Model Context Protocol (MCP) servers to retrieve tools. Configure this in your `config.yaml`.
+
+## MCP Configuration Modes
+
+You can configure MCP servers in two modes:
+
+### 1. Strict Mode (Default/Secure)
+In strict mode, **every tool** returned by the MCP server **must be explicitly configured** in `myai.toolbox.tools`. If an unconfigured tool is found, the application will fail to start.
+
+```yaml
+mcps:
+  - name: secure-tools
+    url: http://localhost:8080/mcp
+    transport: streamable_http
+    mode: strict
+```
+
+### 2. Dynamic Mode (Flexible)
+In dynamic mode, tools not explicitly configured will use a **default configuration**. Explicit configuration still overrides the default.
+
+```yaml
+mcps:
+  - name: rapid-dev-tools
+    url: http://localhost:8081/mcp
+    transport: streamable_http
+    mode: dynamic
+    default_tool_config:
+      max_instances: 5
+      timeout: P0DT0H0M30S  # 30 seconds
+```
+
 # LangGraph Graph
 this it the graph of the nodes used to capture the conversational graph.
 
