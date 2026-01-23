@@ -59,7 +59,7 @@ async def connect_to_mcp_server(app):
             logger.info(f"Connecting to MCP server '{mcp.name}' at {mcp.url}")
 
             # Get tools from this specific MCP
-            mcp_tools = await client.get_tools(mcp.name)
+            mcp_tools = await client.get_tools(server_name=mcp.name)
 
             # Check if MCP returned no tools
             if not mcp_tools:
