@@ -185,9 +185,9 @@ class LanggraphHandler:
 
         return self.graph
 
-    def register_tools(self, tools: Sequence[StructuredTool]):
+    def register_tools(self, tools: Sequence[StructuredTool], context=None):
         """Registers the tools with the client."""
-        self.function_registry.register_tools(tools)
+        self.function_registry.register_tools(tools, context=context)
 
     # async def upload(
     #     self,

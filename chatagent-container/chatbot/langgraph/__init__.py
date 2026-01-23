@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from chatbot.hams import config
 
 from chatbot.langgraph.handler import LanggraphHandler
+from chatbot.langgraph.toolregistry import ToolRegistrationContext
 from chatbot.mcp_client import MCPObjects
 from chatbot.config import LangchainConfig
 
@@ -33,7 +34,6 @@ import logging
 
 # Set up logging
 logger = logging.getLogger(__name__)
-
 
 
 
@@ -109,6 +109,9 @@ def langgraph_app_create(app: web.Application, config: ServiceConfig):
 
 
     langgraph_handler = LanggraphHandler(config.myai, model, registry=app[keys.metrics])
-    langgraph_handler.register_tools(mytools)
+
+    # Register local tools with strict mode context
+    local_context = ToolRegistrationContext(source="local")
+    langgraph_handler.register_tools(mytools, context=local_context)
 
     app[keys.langgraph_handler] = langgraph_handler
