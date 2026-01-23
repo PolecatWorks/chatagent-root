@@ -4,4 +4,6 @@ image:
   tag: main
   pullPolicy: Always
 
-secretName: customer-mcp
+configs:
+  mcp:
+    chaser_service_url: http://recon-k8s-micro

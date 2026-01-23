@@ -28,6 +28,7 @@ webservice:
 mcp:
   name: mcp-server
   instructions: "You are a helpful assistant."
+  chaser_service_url: http://localhost
 hams:
   url: http://0.0.0.0:8079
   prefix: hams

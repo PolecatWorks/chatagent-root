@@ -1,5 +1,7 @@
 env: {}
 
+chaserUrl: http://dev.k8s/k8s-micro/v0/chaser
+
 replicaCount: 1
 
 lifecycle:
