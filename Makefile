@@ -7,7 +7,7 @@ DOCKER=docker
 
 BASE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-UVICORN=${BASE_DIR}mcp-venv/bin/uvicorn
+UVICORN=${BASE_DIR}customer-mcp-venv/bin/uvicorn
 
 aiohttp_apps:=chatagent
 
