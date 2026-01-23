@@ -29,5 +29,6 @@ spec:
       tag: main
       pullPolicy: Always
     secretName: customer-mcp
-    mcp:
-      chaser_service_url: http://recon-k8s-micro/k8s-micro/v0/chaser
+    configs:
+      mcp:
+        chaser_service_url: http://recon-k8s-micro/k8s-micro/v0/chaser
