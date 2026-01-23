@@ -48,14 +48,11 @@ def cli(ctx, debug):
 
 # ------------- CLI commands go below here -------------
 
-from chatbot.config import ServiceConfig
 
 
 def shared_options(function):
     function = click.option("--config", required=True, type=click.File("rb"))(function)
-    function = click.option("--secrets", required=True, type=click.Path(exists=True))(
-        function
-    )
+    function = click.option("--secrets", required=True, type=click.Path(exists=True))(function)
     function = click.pass_context(function)
     return function
 
@@ -83,7 +80,6 @@ def start(ctx, config, secrets):
     # Load logging configuration from YAML file
     logging.config.dictConfig(configObj.logging)
 
-    logger = logging.getLogger(__name__)
     print(to_yaml_str(configObj, indent=2))
 
     app_start(configObj)

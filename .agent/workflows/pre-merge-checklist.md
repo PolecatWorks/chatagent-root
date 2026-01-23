@@ -6,9 +6,11 @@ description: Final checklist and verification steps before merging to the main b
 
 Follow these steps before merging any feature or fix branch into `main`.
 
-## 1. Local Testing
+## 1. Local Testing & Quality
 1. Run full test suite: `make chatagent-test` and `make customer-mcp-test`.
-2. Ensure all tests pass (no regressions).
+2. Run `make lint` to ensure no last-minute formatting issues.
+3. **Re-verify tests** if `make lint` made any changes.
+4. Ensure all tests pass (no regressions).
 
 ## 2. Docker Verification
 1. Build all modified containers:

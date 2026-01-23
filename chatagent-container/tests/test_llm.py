@@ -10,7 +10,6 @@ import pytest
 from deepeval.models.base_model import DeepEvalBaseLLM
 
 
-
 @pytest.fixture
 def enable_livellm(request):
     return request.config.getoption("--enable-livellm")
@@ -19,9 +18,7 @@ def enable_livellm(request):
 @pytest.fixture
 def config() -> ServiceConfig:
     config_filename = "tests/test_data/config.yaml"
-    secrets_dir = os.environ.get(
-        "TEST_SECRETS_DIR", "tests/test_data/secrets"
-    )
+    secrets_dir = os.environ.get("TEST_SECRETS_DIR", "tests/test_data/secrets")
 
     config: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config_filename, secrets_dir)
 
@@ -34,10 +31,7 @@ def llm_model(config: ServiceConfig):
 
 
 class LangChainDeepEval(DeepEvalBaseLLM):
-    def __init__(
-        self,
-        model
-    ):
+    def __init__(self, model):
         self.model = model
 
     def load_model(self):
@@ -55,6 +49,7 @@ class LangChainDeepEval(DeepEvalBaseLLM):
     def get_model_name(self):
         return "Langchain based model"
 
+
 @pytest.fixture
 def llm_deep_eval(llm_model):
     return LangChainDeepEval(llm_model)
@@ -66,9 +61,7 @@ def llm_app(enable_livellm):
 
     if enable_livellm:
         config_filename = "tests/test_data/config.yaml"
-        secrets_dir = os.environ.get(
-            "TEST_SECRETS_DIR", "tests/test_data/secrets"
-        )
+        secrets_dir = os.environ.get("TEST_SECRETS_DIR", "tests/test_data/secrets")
 
         config: ServiceConfig = ServiceConfig.from_yaml_and_secrets_dir(config_filename, secrets_dir)
 
@@ -85,9 +78,6 @@ def llm_app(enable_livellm):
 async def service_client(aiohttp_client, llm_app):
     client = await aiohttp_client(llm_app)
     return client
-
-
-
 
 
 @pytest.fixture
@@ -108,22 +98,11 @@ async def llm_conversation_handler(config: ServiceConfig) -> LanggraphHandler:
     return llm_handler
 
 
-
-
-
-
-
 @pytest.mark.asyncio
-@pytest.mark.skip(
-    "Skipping LLM conversation handler test as it requires solving duplicates for prometheus"
-)
+@pytest.mark.skip("Skipping LLM conversation handler test as it requires solving duplicates for prometheus")
 async def test_llm_chat(llm_conversation_handler):
-    converation_account = ConversationAccount(
-        id="test-conversation", name="Test Conversation", conversation_type="test-type"
-    )
-    reply = await llm_conversation_handler.chat(
-        converation_account, "my-identity", "Hello, how are you?"
-    )
+    converation_account = ConversationAccount(id="test-conversation", name="Test Conversation", conversation_type="test-type")
+    reply = await llm_conversation_handler.chat(converation_account, "my-identity", "Hello, how are you?")
     assert reply is not None
 
 
@@ -144,19 +123,12 @@ async def test_llm_chat_post_valid(service_client, enable_livellm):
     assert resp.status == 404
 
 
-
-
-
 from deepeval import assert_test
 from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from deepeval.metrics import GEval
 
 
-
-
-@pytest.mark.skip(
-    "Skipping temporarily as it requires secrets"
-)
+@pytest.mark.skip("Skipping temporarily as it requires secrets")
 async def test_llmconversation_handler(llm_conversation_handler, llm_deep_eval, enable_livellm):
 
     print("Starting LLMConversationHandler test")
@@ -167,9 +139,12 @@ async def test_llmconversation_handler(llm_conversation_handler, llm_deep_eval, 
     correctness_metric = GEval(
         name="Correctness",
         criteria="Determine if the 'actual output' is correct based on the 'expected output'.",
-        evaluation_params=[LLMTestCaseParams.ACTUAL_OUTPUT, LLMTestCaseParams.EXPECTED_OUTPUT],
+        evaluation_params=[
+            LLMTestCaseParams.ACTUAL_OUTPUT,
+            LLMTestCaseParams.EXPECTED_OUTPUT,
+        ],
         threshold=0.3,
-        model=llm_deep_eval
+        model=llm_deep_eval,
     )
 
     test_case = LLMTestCase(

@@ -50,15 +50,11 @@ def service_app_create(app: web.Application, config: ServiceConfig) -> web.Appli
     """
     registry = REGISTRY if keys.metrics not in app else app[keys.metrics]
 
-    app[keys.events] = Events(
-        app[keys.config].events, datetime.now(timezone.utc), 0, registry=registry
-    )
+    app[keys.events] = Events(app[keys.config].events, datetime.now(timezone.utc), 0, registry=registry)
 
     app.cleanup_ctx.append(service_coroutine_cleanup)
 
-    print(
-        f"Service: {app[keys.config].webservice.url.host}:{app[keys.config].webservice.url.port}/{app[keys.config].webservice.prefix}"
-    )
+    print(f"Service: {app[keys.config].webservice.url.host}:{app[keys.config].webservice.url.port}/{app[keys.config].webservice.prefix}")
 
     app.add_routes(
         [
@@ -69,8 +65,6 @@ def service_app_create(app: web.Application, config: ServiceConfig) -> web.Appli
 
     app[keys.webservice] = app
 
-    logger.info(
-        f"Service: {app[keys.config].webservice.url.host}:{app[keys.config].webservice.url.port}/{app[keys.config].webservice.prefix}"
-    )
+    logger.info(f"Service: {app[keys.config].webservice.url.host}:{app[keys.config].webservice.url.port}/{app[keys.config].webservice.prefix}")
 
     return app

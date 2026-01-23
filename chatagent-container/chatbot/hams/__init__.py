@@ -31,9 +31,7 @@ async def hams_app_cleanup(app: web.Application):
         access_log=logger,
     )
     await runner.setup()
-    site = web.TCPSite(
-        runner, app[keys.hams].config.url.host, app[keys.hams].config.url.port
-    )
+    site = web.TCPSite(runner, app[keys.hams].config.url.host, app[keys.hams].config.url.port)
 
     await site.start()
 
@@ -95,9 +93,7 @@ class ShutdownView(web.View):
         ready = {"shutdown": True}
         hams: Hams = self.request.app[keys.hams]
 
-        logger.info(
-            "Shutting down stall for conneciton draiining. Ready will be disabled automatically by k8s"
-        )
+        logger.info("Shutting down stall for conneciton draiining. Ready will be disabled automatically by k8s")
 
         waitTime = self.request.app[keys.hams].config.shutdownDuration.total_seconds()
         await asyncio.sleep(waitTime)
@@ -153,9 +149,7 @@ def hams_app_create(base_app: web.Application, config: HamsConfig) -> web.Applic
     app[keys.metrics] = base_app[keys.metrics]
     base_app[keys.hams] = hams
 
-    logger.info(
-        f"HaMS: {hams.config.url.host}:{hams.config.url.port}/{hams.config.prefix}"
-    )
+    logger.info(f"HaMS: {hams.config.url.host}:{hams.config.url.port}/{hams.config.prefix}")
 
     app.add_routes(
         [

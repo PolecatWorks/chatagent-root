@@ -1,15 +1,12 @@
-
-
 from fastmcp import FastMCP
 from pydantic import BaseModel
 
-from  random import randint
+from random import randint
 import logging
 from fastmcp.server.context import Context
 import httpx
 
 logger = logging.getLogger(__name__)
-
 
 
 class Customer(BaseModel):
@@ -22,8 +19,11 @@ class ChaserAggregate(BaseModel):
     Represents the aggregate state of a chaser event.
 
     Based on the response from /k8s-micro/v0/chaser/{key}
-    Example: {"type":"com.polecatworks.chaser.Aggregate","names":["Ben01"],"count":22950,"latest":1768516413076752931,"longest":10000}
+    Example: {"type":"com.polecatworks.chaser.Aggregate",
+              "names":["Ben01"],"count":22950,
+              "latest":1768516413076752931,"longest":10000}
     """
+
     type: str
     names: list[str]
     count: int
@@ -35,18 +35,14 @@ class MCPConfig(BaseModel):
     """
     Configuration of the MCP server
     """
+
     name: str
     instructions: str
     chaser_service_url: str = "http://dev.k8s/k8s-micro/v0/chaser"
 
 
 def mcp_init(config: MCPConfig):
-    fastmcp_app = FastMCP(
-        name=config.name,
-        instructions=config.instructions
-    )
-
-
+    fastmcp_app = FastMCP(name=config.name, instructions=config.instructions)
 
     @fastmcp_app.tool(description="say hello")
     def hello(ctx: Context):
@@ -60,7 +56,7 @@ def mcp_init(config: MCPConfig):
         return randnum
 
     @fastmcp_app.tool(description="return a customer")
-    async def get_customer(ctx: Context, id: str)->Customer:
+    async def get_customer(ctx: Context, id: str) -> Customer:
         logger.error(f"get_customer: {id}")
         return Customer(name="John Doe", id=id)
 
@@ -84,7 +80,5 @@ def mcp_init(config: MCPConfig):
             resp.raise_for_status()
             data = resp.json()
             return ChaserAggregate(**data)
-
-
 
     return fastmcp_app

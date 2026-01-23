@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, Field
 from abc import ABC, abstractmethod
 import logging
@@ -7,7 +6,6 @@ from datetime import timedelta
 from enum import Enum
 
 logger = logging.getLogger(__name__)
-
 
 
 class HamsCheck(ABC, BaseModel):
@@ -98,15 +96,15 @@ class HamsChecks(BaseModel):
             # if remaining_attempts > 0:
             #     await asyncio.sleep(self.timeout)
 
-        logger.error(f"Checks failed")
+        logger.error("Checks failed")
 
         raise Exception("Checks failed")
 
     async def run_preflights(self):
-        results = await self.run_checks(self.preflights)
+        await self.run_checks(self.preflights)
 
     async def run_shutdowns(self):
-        results = await self.run_checks(self.shutdowns)
+        await self.run_checks(self.shutdowns)
 
 
 class HamsConfig(BaseModel):

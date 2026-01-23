@@ -10,6 +10,15 @@ BASE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 UVICORN=${BASE_DIR}customer-mcp-venv/bin/uvicorn
 
 aiohttp_apps:=chatagent
+python_apps:=$(aiohttp_apps) customer-mcp
+
+lint: $(foreach app,$(python_apps),$(app)-lint)
+
+$(foreach app,$(python_apps),$(app)-lint): %-lint: %-venv/bin/activate
+	@echo Linting $*
+	cd $*-container && \
+	${BASE_DIR}$*-venv/bin/black --line-length 999 . && \
+	${BASE_DIR}$*-venv/bin/flake8 .
 
 PDB = --pdb
 

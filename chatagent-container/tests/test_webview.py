@@ -62,9 +62,7 @@ async def test_chunks_post_valid(service_client):
     assert resp2.status == 200
     data2 = await resp2.json()
     assert "chunks" in data2
-    assert (
-        data2["chunks"] >= 3
-    )  # Depending on implementation, could be exactly 3 or cumulative
+    assert data2["chunks"] >= 3  # Depending on implementation, could be exactly 3 or cumulative
 
 
 @pytest.mark.asyncio
@@ -87,9 +85,7 @@ async def test_chunks_post_invalid(service_client):
 @pytest.mark.asyncio
 @pytest.mark.skip("Skipping non-JSON body POST test for now")
 async def test_chunks_post_non_json(service_client):
-    resp = await service_client.post(
-        "/pie/v0/chunks", data="notjson", headers={"Content-Type": "text/plain"}
-    )
+    resp = await service_client.post("/pie/v0/chunks", data="notjson", headers={"Content-Type": "text/plain"})
     # Should return 400 or 415 depending on implementation
     assert resp.status in (400, 415)
 

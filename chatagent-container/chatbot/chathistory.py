@@ -1,4 +1,3 @@
-
 from langchain_core.messages.base import BaseMessage
 from langchain_core.messages import (
     BaseMessage,
@@ -6,7 +5,7 @@ from langchain_core.messages import (
     SystemMessage,
     ToolMessage,
     AIMessage,
-    FunctionMessage # Include all types you use
+    FunctionMessage,  # Include all types you use
 )
 
 
@@ -23,7 +22,7 @@ MessageType = Annotated[
         HumanMessage,
         SystemMessage,
     ],
-    Field(discriminator='type')
+    Field(discriminator="type"),
 ]
 
 
